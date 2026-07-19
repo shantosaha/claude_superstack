@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SuperStack — Visual Diagrams</title>
+<style>
+  :root{
+    --bg:#151313;
+    --panel:#1c1a19;
+    --panel2:#211f1e;
+    --line:#3a3634;
+    --text:#f2ede6;
+    --muted:#a89d92;
+    --accent:#e0a05a;
+    --accent2:#7fa88f;
+    --accent3:#8aa6c9;
+    --accent4:#c98a8a;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --serif: "Iowan Old Style","Palatino Linotype", Palatino, Georgia, serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 90px;}
+  header.top{margin-bottom:56px;}
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:10px;
+  }
+  h1{
+    font-size:clamp(32px,4.5vw,52px);
+    font-weight:600;
+    line-height:1.05;
+    margin:0 0 14px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:16px;
+    max-width:640px;
+    line-height:1.55;
+  }
+  nav.toc{
+    display:flex;
+    gap:10px;
+    margin-top:28px;
+    flex-wrap:wrap;
+  }
+  nav.toc a{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.04em;
+    color:var(--muted);
+    text-decoration:none;
+    border:1px solid var(--line);
+    padding:8px 14px;
+    border-radius:999px;
+    transition:.15s;
+  }
+  nav.toc a:hover{border-color:var(--accent);color:var(--accent);}
+
+  section.diagram{margin-bottom:96px;}
+  .dhead{
+    display:flex;
+    align-items:baseline;
+    gap:16px;
+    margin-bottom:6px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:16px;
+  }
+  .dnum{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--accent);
+    letter-spacing:.1em;
+  }
+  h2{font-size:26px;font-weight:600;margin:0;letter-spacing:-0.01em;}
+  .dcap{color:var(--muted);font-size:14.5px;max-width:680px;margin:14px 0 32px;line-height:1.6;}
+
+  /* ============ DIAGRAM 1: ARCHITECTURE ============ */
+  .arch{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+  }
+  @media (max-width:860px){.arch{grid-template-columns:1fr;}}
+  .col{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px;
+  }
+  .col-label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent2);
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .col-label::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent2);display:inline-block;}
+  .col.global .col-label{color:var(--accent);}
+  .col.global .col-label::before{background:var(--accent);}
+  .path{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--muted);
+    margin-bottom:14px;
+  }
+  .node{
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:11px 13px;
+    margin-bottom:8px;
+    font-size:13.5px;
+  }
+  .node .t{font-weight:600;font-family:var(--mono);font-size:12.5px;color:var(--text);}
+  .node .d{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4;}
+  .node.hi{border-color:var(--accent);}
+  .node.hi .t{color:var(--accent);}
+  .indent{margin-left:16px;border-left:2px solid var(--line);padding-left:14px;margin-bottom:8px;}
+  .indent .node{margin-bottom:6px;}
+  .arrow-between{
+    grid-column:1 / -1;
+    text-align:center;
+    font-family:var(--mono);
+    color:var(--accent);
+    font-size:13px;
+    padding:6px 0;
+    letter-spacing:.05em;
+  }
+
+  /* ============ DIAGRAM 2: LIFECYCLE ============ */
+  .lifecycle{position:relative;}
+  .step{
+    display:grid;
+    grid-template-columns:56px 1fr;
+    gap:20px;
+    position:relative;
+    padding-bottom:6px;
+  }
+  .step:not(:last-child) .stepline{
+    position:absolute;
+    left:27px;
+    top:56px;
+    bottom:-6px;
+    width:2px;
+    background:var(--line);
+  }
+  .stepnum{
+    width:56px;height:56px;
+    border-radius:50%;
+    background:var(--panel2);
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);
+    font-size:15px;
+    color:var(--accent);
+    flex-shrink:0;
+    z-index:1;
+  }
+  .stepbody{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:26px;
+  }
+  .stepbody h3{margin:0 0 8px;font-size:16px;font-weight:600;}
+  .stepbody .tag{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:3px 9px;
+    border-radius:999px;
+    display:inline-block;
+    margin-bottom:10px;
+  }
+  .tag.silent{background:rgba(127,168,143,.15);color:var(--accent2);border:1px solid rgba(127,168,143,.35);}
+  .tag.active{background:rgba(224,160,90,.15);color:var(--accent);border:1px solid rgba(224,160,90,.35);}
+  .tag.gate{background:rgba(201,138,138,.15);color:var(--accent4);border:1px solid rgba(201,138,138,.35);}
+  .stepbody p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.6;}
+  .stepbody code{
+    font-family:var(--mono);
+    background:var(--panel2);
+    padding:2px 6px;
+    border-radius:4px;
+    font-size:12.5px;
+    color:var(--accent3);
+  }
+  .previewbox{
+    margin-top:12px;
+    background:#0f0e0d;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--accent2);
+    line-height:1.7;
+  }
+
+  /* ============ DIAGRAM 3: 7 LAYERS ============ */
+  .layers{display:flex;flex-direction:column;gap:10px;}
+  .layer{
+    display:grid;
+    grid-template-columns:220px 1fr;
+    gap:0;
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    background:var(--panel);
+  }
+  @media (max-width:700px){.layer{grid-template-columns:1fr;}}
+  .layer-name{
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    border-right:1px solid var(--line);
+    background:var(--panel2);
+  }
+  @media (max-width:700px){.layer-name{border-right:none;border-bottom:1px solid var(--line);}}
+  .layer-name .num{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px;}
+  .layer-name .name{font-weight:600;font-size:14.5px;}
+  .layer-repos{
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .chip{
+    font-family:var(--mono);
+    font-size:12px;
+    padding:6px 11px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    color:var(--text);
+    background:var(--panel);
+    white-space:nowrap;
+  }
+  .layer:nth-child(1) .layer-name .num, .layer:nth-child(1) .chip{border-color:var(--accent3);color:var(--accent3);}
+  .layer:nth-child(2) .layer-name .num, .layer:nth-child(2) .chip{border-color:var(--accent4);color:var(--accent4);}
+  .layer:nth-child(3) .layer-name .num, .layer:nth-child(3) .chip{border-color:var(--accent);color:var(--accent);}
+  .layer:nth-child(4) .layer-name .num, .layer:nth-child(4) .chip{border-color:var(--accent2);color:var(--accent2);}
+  .layer:nth-child(5) .layer-name .num, .layer:nth-child(5) .chip{border-color:var(--accent3);color:var(--accent3);}
+  .layer:nth-child(6) .layer-name .num, .layer:nth-child(6) .chip{border-color:var(--accent4);color:var(--accent4);}
+  .layer:nth-child(7) .layer-name .num, .layer:nth-child(7) .chip{border-color:var(--accent);color:var(--accent);}
+
+  footer{
+    margin-top:60px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:12px;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">claude-superstack · reference diagrams</div>
+    <h1>How the whole stack fits together</h1>
+    <p class="sub">Three visual diagrams matching Section 19 of the System Deep-Dive: the global/project architecture, the seven-step prompt lifecycle, and the seven functional layers across all ten repos.</p>
+    <nav class="toc">
+      <a href="#d1">01 · Architecture</a>
+      <a href="#d2">02 · Prompt Lifecycle</a>
+      <a href="#d3">03 · Ten-Repo Layers</a>
+    </nav>
+  </header>
+
+  <!-- DIAGRAM 1 -->
+  <section class="diagram" id="d1">
+    <div class="dhead">
+      <span class="dnum">01</span>
+      <h2>Global layer + per-project layer</h2>
+    </div>
+    <p class="dcap">Everything under <code>~/.claude/</code> installs once and applies to every project. Each project you initialize gets its own isolated memory folders.</p>
+
+    <div class="arch">
+      <div class="col global">
+        <div class="col-label">Global — installed once</div>
+        <div class="path">~/.claude/</div>
+        <div class="node hi">
+          <div class="t">CLAUDE.md</div>
+          <div class="d">The Master Router — read every session, followed on every prompt</div>
+        </div>
+        <div class="node">
+          <div class="t">hooks/hooks.json</div>
+          <div class="d">SessionStart memory injection · Stop cache rotation</div>
+        </div>
+        <div class="node">
+          <div class="t">plugins/</div>
+          <div class="d">ECC · Superpowers · Ponytail · claude-obsidian · obsidian-skills · karpathy-skills · ui-ux-pro-max</div>
+        </div>
+        <div class="node">
+          <div class="t">commands/</div>
+          <div class="d">GSD Core's slash commands land here</div>
+        </div>
+        <div class="node">
+          <div class="t">superstack/</div>
+          <div class="d">CLI (bin/), router source (global/), project templates (templates/)</div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-label">Per project — created by init / migrate</div>
+        <div class="path">my-project/</div>
+        <div class="node hi">
+          <div class="t">CLAUDE.md</div>
+          <div class="d">Inherits the global router + project-specific notes</div>
+        </div>
+        <div class="node">
+          <div class="t">.vault/</div>
+          <div class="d">This project's Obsidian memory</div>
+        </div>
+        <div class="indent">
+          <div class="node"><div class="t">hot.md</div><div class="d">rolling ~50-line recent context</div></div>
+          <div class="node"><div class="t">index.md</div><div class="d">table of contents of vault topics</div></div>
+          <div class="node"><div class="t">wiki/</div><div class="d">individual linked knowledge pages</div></div>
+        </div>
+        <div class="node">
+          <div class="t">.graphify/</div>
+          <div class="d">This project's code knowledge graph (graph.json, graph.html)</div>
+        </div>
+        <div class="node">
+          <div class="t">.superstack.json</div>
+          <div class="d">Per-project config — ponytail level, enabled repos</div>
+        </div>
+      </div>
+
+      <div class="arrow-between">↑ one global install powers ↓ every project below, independently ↑</div>
+    </div>
+  </section>
+
+  <!-- DIAGRAM 2 -->
+  <section class="diagram" id="d2">
+    <div class="dhead">
+      <span class="dnum">02</span>
+      <h2>What happens on every prompt</h2>
+    </div>
+    <p class="dcap">The router's seven steps, run in order, every single time you type something into Claude Code.</p>
+
+    <div class="lifecycle">
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">0</div>
+        <div class="stepbody">
+          <span class="tag active">always-on</span>
+          <h3>Discipline layer loads</h3>
+          <p>Karpathy guidelines apply automatically: no silent assumptions, goal-driven execution, anti-overcomplication, never rewrite code you don't understand.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">1</div>
+        <div class="stepbody">
+          <span class="tag silent">silent · 0 tokens</span>
+          <h3>Memory-first check</h3>
+          <p>Reads <code>.vault/hot.md</code>, <code>.vault/index.md</code>, and queries <code>graphify</code> for relevant files — before ever asking you for context.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">2</div>
+        <div class="stepbody">
+          <span class="tag active">always-on</span>
+          <h3>Ponytail auto-levels</h3>
+          <p>Quick fix → <code>ultra</code> · normal feature → <code>full</code> · complex/unfamiliar → <code>lite</code>. Overridable any time with <code>/ponytail &lt;level&gt;</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">3</div>
+        <div class="stepbody">
+          <span class="tag active">routing</span>
+          <h3>Intent routing</h3>
+          <p>Your prompt is matched against the intent table and mapped to a tool chain — e.g. feature + UI work routes through GSD, ui-ux-pro-max, Superpowers, and ECC in sequence.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">4</div>
+        <div class="stepbody">
+          <span class="tag gate">confirmation gate</span>
+          <h3>Preview + confirm</h3>
+          <p>One line per command, plus a file-count estimate. <code>/skip</code> waives it for normal tasks only — heavy (&gt;10 files) and destructive actions always show, no exceptions.</p>
+          <div class="previewbox">→ /gsd-plan-feature (structure work)<br>→ uipro search "auth form" (design pattern)<br>→ /execute-plan (build) → /ecc:code-review (verify)<br>~4 files affected. Proceed?</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">5</div>
+        <div class="stepbody">
+          <span class="tag active">execution</span>
+          <h3>Execute the chain</h3>
+          <p>Skills auto-apply, agents launch where relevant, output stays minimal (ponytail), ECC quality gates verify before anything is declared done.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepnum">6</div>
+        <div class="stepbody">
+          <span class="tag silent">silent write-back</span>
+          <h3>Memory updates</h3>
+          <p><code>.vault/hot.md</code> gets a short summary, <code>.vault/index.md</code> updates if new topics appeared, changed files are noted for the next graphify pass. Never announced.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DIAGRAM 3 -->
+  <section class="diagram" id="d3">
+    <div class="dhead">
+      <span class="dnum">03</span>
+      <h2>Seven functional layers, ten repos</h2>
+    </div>
+    <p class="dcap">Every repo covers a distinct layer with almost no overlap — remove any one and you lose a specific capability.</p>
+
+    <div class="layers">
+      <div class="layer">
+        <div class="layer-name"><div class="num">01</div><div class="name">Knowledge / Memory</div></div>
+        <div class="layer-repos">
+          <span class="chip">claude-obsidian</span>
+          <span class="chip">obsidian-skills</span>
+          <span class="chip">graphify</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">02</div><div class="name">Discipline</div></div>
+        <div class="layer-repos"><span class="chip">andrej-karpathy-skills</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">03</div><div class="name">Minimization / tokens</div></div>
+        <div class="layer-repos"><span class="chip">ponytail</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">04</div><div class="name">Workflow</div></div>
+        <div class="layer-repos"><span class="chip">superpowers</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">05</div><div class="name">Context management</div></div>
+        <div class="layer-repos"><span class="chip">gsd-core</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">06</div><div class="name">Quality</div></div>
+        <div class="layer-repos"><span class="chip">ecc</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">07</div><div class="name">Design</div></div>
+        <div class="layer-repos">
+          <span class="chip">ui-ux-pro-max-skill</span>
+          <span class="chip">open-design (optional)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>claude-superstack — visual reference</span>
+    <span>companion to SYSTEM-DEEP-DIVE.md · Section 19</span>
+  </footer>
+
+</div>
+</body>
+</html>
