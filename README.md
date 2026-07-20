@@ -37,6 +37,19 @@ Turns Claude Code into an integrated, memory-backed, self-optimizing dev environ
 | **Last Auto-Updated** | `2026-07-20` | Triggered by latest repository push |
 <!-- STATS_END -->
 
+## Feature & Compatibility Matrix
+
+| Feature Layer | Integrated Tool | Main Responsibility | Status |
+|---|---|---|---|
+| **Memory Sync** | `claude-obsidian` | Obsidian hot notes vault integration | Verified |
+| **Code Map** | `graphify` | Dynamic codebase knowledge graphs | Verified |
+| **Token Reduction** | `ponytail` | Auto-leveled prompt token optimization | Verified |
+| **Code Quality** | `ECC` | Multi-step pipeline quality gates | Verified |
+| **UX/UI Pro** | `ui-ux-pro-max` | Generates modern premium web designs | Verified |
+| **Agent Tasks** | `gsd-core` | Runs background terminal command loops | Verified |
+
+---
+
 ## Install (one line)
 
 **macOS / Linux / WSL**
@@ -74,20 +87,91 @@ bash install.sh          # macOS / Linux / WSL
 # powershell -ExecutionPolicy Bypass -File install.ps1
 ```
 
-## Commands
+## Commands (Interactive Playground)
 
 <p align="center">
   <img src="documents/assets/superstack-commands.svg" alt="SuperStack CLI Commands" width="100%" />
 </p>
 
+Click on a command below to see detailed usage and expected output:
+
+<details>
+<summary><b>🛠️ superstack install</b> (Click to expand)</summary>
+<p>Verifies your system dependencies and automatically clones, builds, and connects all 10 repositories and global routers.</p>
+
 ```bash
-superstack install   # install/verify all 10 repos + global router + hooks
-superstack init x    # create new project 'x' (vault + graph + config, auto-wired)
-superstack migrate . # enable SuperStack on an existing project
-superstack doctor    # health-check everything
-superstack update    # pull the latest version of every repo
-superstack uninstall # remove SuperStack global files
+$ superstack install
+── Installing the 10-repo stack (latest from official sources) ──
+  ✅ ecc already installed
+  ✅ gsd-core installed
+  ✅ ponytail installed
+  ✅ graphify installed
+  ✅ claude-obsidian installed
+  [+] Setting up global SessionStart and Stop Git hooks...
+  [+] Installation completed! SuperStack router is fully initialized.
 ```
+</details>
+
+<details>
+<summary><b>🆕 superstack init &lt;project-name&gt;</b> (Click to expand)</summary>
+<p>Initializes a clean development environment, configuring Obsidian Vault links, knowledge graphs, and default rules.</p>
+
+```bash
+$ superstack init my-awesome-app
+  [*] Creating project layout structure...
+    - my-awesome-app/CLAUDE.md
+    - my-awesome-app/.vault/hot.md
+    - my-awesome-app/.graphify/graph.html
+  [+] Generated configured Obsidian vault at my-awesome-app/.vault/
+  [+] Initialized Git hooks for silent memory syncing.
+  [+] New project 'my-awesome-app' has been successfully created!
+```
+</details>
+
+<details>
+<summary><b>🚚 superstack migrate &lt;path&gt;</b> (Click to expand)</summary>
+<p>Safely enables the SuperStack memory and routing layers on an existing software project.</p>
+
+```bash
+$ superstack migrate .
+  [*] Analyzing existing repository structure...
+  [*] Inserting CLAUDE.md router template...
+  [*] Wire-framing global Obsidian hooks...
+  [+] SuperStack configuration enabled on current folder.
+  [+] Successfully migrated project to SuperStack environment!
+```
+</details>
+
+<details>
+<summary><b>🏥 superstack doctor</b> (Click to expand)</summary>
+<p>Runs a thorough health check on node variables, global configurations, and all 10 unified tools.</p>
+
+```bash
+$ superstack doctor
+  [*] Running system-wide sanity health-check...
+  ✔ Git CLI -> Verified
+  ✔ Node.js -> Verified (v20.12.0)
+  ✔ Claude Code -> Verified
+  ✔ Global Router Hooks -> Verified (Active)
+  ✔ Integrated Frameworks -> 10/10 verified active
+  STATUS: READY (SuperStack dev environment is fully operational!)
+```
+</details>
+
+<details>
+<summary><b>🔄 superstack update</b> (Click to expand)</summary>
+<p>Queries upstream repositories to pull the latest versions of your stack tools while preserving your project settings and memory vault data.</p>
+
+```bash
+$ superstack update
+  [*] Querying upstream sources for 10 unified repositories...
+  [*] Pulling updates for: ponytail...
+  [*] Pulling updates for: graphify...
+  [+] 4 updates applied. All libraries are now up-to-date.
+```
+</details>
+
+---
 
 ## What happens on every prompt
 
@@ -125,7 +209,7 @@ sequenceDiagram
 | `/superstack-status` | Show active repos, level, vault health |
 | `/save [name]` | File the session into the project vault |
 
-## Per-project layout
+## Per-project layout & Anatomy
 
 <p align="center">
   <img src="documents/assets/superstack-layout.svg" alt="SuperStack Project Layout" width="100%" />
@@ -139,9 +223,23 @@ your-project/
 └── .superstack.json   # per-project config
 ```
 
+### Layout Anatomy Breakdown:
+* 📂 **`.vault/`:** Your local Markdown notebook containing active short-term and long-term memory logs (`hot.md`). Open this in the **Obsidian app** to interact with the notes visually.
+* 📂 **`.graphify/`:** Houses the auto-updated code knowledge graph. Double-click `graph.html` to open an interactive link visualizer of your code symbols in your browser.
+* 📄 **`CLAUDE.md`:** The local instructions router that imports global policies (Karpathy limits, Ponytail optimization levels) and wires it into Claude Code.
+
 ## Requirements
 - git, Node.js 20+, Claude Code
 - Optional: `uv` or `pipx` (graphify), `pnpm` + Node 24 (open-design)
+
+## Troubleshooting Diagnostics
+
+* **Issue: `superstack doctor` reports missing Git hook status**
+  * *Fix:* Run `superstack install` again to re-register the Git event handlers.
+* **Issue: Obsidian vault is not capturing new prompt logs**
+  * *Fix:* Make sure you are using `/save` at the end of your session or verify that the write-back hook wasn't skipped with `/skip`.
+* **Issue: Token limit exceeded**
+  * *Fix:* Set ponytail to a more aggressive compression level in chat: `/ponytail ultra`.
 
 ## Documentation
 
