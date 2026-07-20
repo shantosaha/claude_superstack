@@ -79,6 +79,19 @@ if (fs.existsSync(readmePath)) {
 
     fs.writeFileSync(readmePath, updatedContent, 'utf8');
     console.log('Successfully updated README.md stats!');
+
+    // 5. Write stats.json for dynamic Shields.io badges
+    const statsJsonPath = path.join(repoRoot, 'documents', 'stats.json');
+    const statsJsonData = {
+      schemaVersion: 1,
+      version: `v${version}`,
+      lines: `${scriptMetrics.lineCount} lines`,
+      frameworks: "10",
+      docs: `${docMetrics.fileCount} guides`,
+      scripts: `${scriptMetrics.fileCount} files`
+    };
+    fs.writeFileSync(statsJsonPath, JSON.stringify(statsJsonData, null, 2), 'utf8');
+    console.log('Successfully updated stats.json!');
   } else {
     console.error('Placeholder tags not found in README.md!');
   }

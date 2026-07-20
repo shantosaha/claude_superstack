@@ -6,8 +6,10 @@
 
 <p align="center">
   <img src="https://img.shields.io/github/actions/workflow/status/shantosaha/claude_superstack/readme-updater.yml?branch=main&label=Status&style=flat-square" alt="Build Status" />
-  <img src="https://img.shields.io/badge/Integrations-10%20Repos-purple?style=flat-square" alt="Integrations" />
-  <img src="https://img.shields.io/github/license/shantosaha/claude_superstack?style=flat-square&color=blue" alt="License" />
+  <img src="https://img.shields.io/badge/endpoint?url=https%3A%2F%2Fshantosaha.github.io%2Fclaude_superstack%2Fdocuments%2Fstats.json&query=%24.version&color=blue&label=version&style=flat-square" alt="Version Badge" />
+  <img src="https://img.shields.io/badge/endpoint?url=https%3A%2F%2Fshantosaha.github.io%2Fclaude_superstack%2Fdocuments%2Fstats.json&query=%24.lines&color=cyan&label=code%20size&style=flat-square" alt="Lines Badge" />
+  <img src="https://img.shields.io/badge/endpoint?url=https%3A%2F%2Fshantosaha.github.io%2Fclaude_superstack%2Fdocuments%2Fstats.json&query=%24.docs&color=yellow&label=documentation&style=flat-square" alt="Docs Badge" />
+  <img src="https://img.shields.io/github/license/shantosaha/claude_superstack?style=flat-square&color=6b21a8" alt="License" />
 </p>
 
 **One command. Ten frameworks. Every project.**
