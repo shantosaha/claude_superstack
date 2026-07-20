@@ -1,5 +1,15 @@
 # claude_superstack
 
+<p align="center">
+  <img src="documents/assets/superstack-pulse.svg" alt="SuperStack Active Router" width="100%" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/shantosaha/claude_superstack/readme-updater.yml?branch=main&label=Status&style=flat-square" alt="Build Status" />
+  <img src="https://img.shields.io/badge/Integrations-10%20Repos-purple?style=flat-square" alt="Integrations" />
+  <img src="https://img.shields.io/github/license/shantosaha/claude_superstack?style=flat-square&color=blue" alt="License" />
+</p>
+
 **One command. Ten frameworks. Every project.**
 
 Turns Claude Code into an integrated, memory-backed, self-optimizing dev environment by unifying 10 open-source frameworks under one global router:
@@ -12,6 +22,18 @@ Turns Claude Code into an integrated, memory-backed, self-optimizing dev environ
 | Workflow | [superpowers](https://github.com/obra/superpowers) · [gsd-core](https://github.com/open-gsd/gsd-core) |
 | Quality | [ECC](https://github.com/affaan-m/ECC) |
 | Design | [ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) · [open-design](https://github.com/nexu-io/open-design) (optional) |
+
+## Repository Stats (Live Updates)
+
+<!-- STATS_START -->
+| Metric | Value | Description |
+|---|---|---|
+| **SuperStack Version** | `v1.0.0` | Current release version |
+| **Integrated Frameworks** | `10` | Unified Claude Code extensions |
+| **Automation Scripts** | `4 files` (442 lines) | Core installation & orchestration |
+| **Documentation Assets** | `5 guides` | Deep-dives, manuals, and schemas |
+| **Last Auto-Updated** | `2026-07-20` | Triggered by latest repository push |
+<!-- STATS_END -->
 
 ## Install (one line)
 
@@ -62,6 +84,24 @@ superstack uninstall # remove SuperStack global files
 ```
 
 ## What happens on every prompt
+
+```mermaid
+sequenceDiagram
+    autonumber
+    Participant User as User Prompt
+    Participant Router as Global Router
+    Participant Memory as Obsidian Vault & Graphify
+    Participant Discipline as Karpathy & Ponytail
+    Participant Executor as Tool Chain Executor
+    Participant Quality as ECC Quality Gate
+
+    User->>Router: Submits query
+    Router->>Memory: Inject session memory (hot.md / graph)
+    Router->>Discipline: Apply code guidelines & optimize tokens
+    Router->>Executor: Route intent & preview commands
+    Executor->>Quality: Run actions through ECC gates
+    Quality-->>User: Return verified output & save state
+```
 
 1. **Silent memory injection** — `.vault/hot.md` + graphify graph loaded via SessionStart hook (0 tokens, file reads)
 2. **Always-on discipline** — Karpathy guidelines + auto-leveled Ponytail
