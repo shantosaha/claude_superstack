@@ -654,19 +654,6 @@ Stated plainly, with no hedging:
 
 ---
 
-## 19. Visual Diagrams Index
-
-In addition to the ASCII diagrams throughout this document, rendered visual
-diagrams are provided as separate image files alongside this guide:
-
-- `diagram-full-architecture.png` — global + per-project layout side by side
-- `diagram-prompt-lifecycle.png` — the 7-step flow from Section 6, as a flowchart
-- `diagram-10-repo-layers.png` — the 7 functional layers and which repos sit in each
-
-Open these images directly, or view them inline if provided in-chat.
-
----
-
 **End of Deep-Dive. For step-by-step usage, see the User Guide. For every
 command with a one-line description, see the Command List.**
 
