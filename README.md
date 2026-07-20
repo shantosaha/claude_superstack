@@ -123,6 +123,10 @@ sequenceDiagram
 
 ## Per-project layout
 
+<p align="center">
+  <img src="documents/assets/superstack-layout.svg" alt="SuperStack Project Layout" width="100%" />
+</p>
+
 ```
 your-project/
 ├── CLAUDE.md          # inherits global router
