@@ -99,7 +99,7 @@ Detailed documentation and guides are available in the [documents/](documents/) 
 
 - [System Deep Dive](documents/SYSTEM-DEEP-DIVE.md) — Comprehensive technical overview of the architecture and global router.
 - [User Guide](documents/USER-GUIDE.md) — Step-by-step instructions on setting up and running SuperStack.
-- [Web View Interface](documents/superstack-web-view.html) — HTML dashboard/web interface for visual interactions.
+- [Web View Interface (Live Webpage)](https://shantosaha.github.io/claude_superstack/documents/superstack-web-view.html) — HTML dashboard/web interface for visual interactions.
 - [AI Frameworks Reference](documents/AI-Frameworks-Complete-Reference-10-Repos.pdf) — Complete reference documentation for the 10 unified frameworks.
 - [Complete Command List](documents/COMPLETE-COMMAND-LIST.pdf) — Cheat sheet of all CLI tools and framework commands.
 
