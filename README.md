@@ -93,5 +93,15 @@ your-project/
 - git, Node.js 20+, Claude Code
 - Optional: `uv` or `pipx` (graphify), `pnpm` + Node 24 (open-design)
 
+## Documentation
+
+Detailed documentation and guides are available in the [documents/](documents/) directory:
+
+- [System Deep Dive](documents/SYSTEM-DEEP-DIVE.md) — Comprehensive technical overview of the architecture and global router.
+- [User Guide](documents/USER-GUIDE.md) — Step-by-step instructions on setting up and running SuperStack.
+- [Web View Interface](documents/superstack-web-view.html) — HTML dashboard/web interface for visual interactions.
+- [AI Frameworks Reference](documents/AI-Frameworks-Complete-Reference-10-Repos.pdf) — Complete reference documentation for the 10 unified frameworks.
+- [Complete Command List](documents/COMPLETE-COMMAND-LIST.pdf) — Cheat sheet of all CLI tools and framework commands.
+
 ## License
 MIT for these scripts. Each integrated repo keeps its own license — this project downloads them from their official sources and bundles nothing.
