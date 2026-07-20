@@ -1,0 +1,18 @@
+{
+  "superstack_version": "1.0.0",
+  "ponytail_level": "auto",
+  "preview_mode": "always",
+  "heavy_task_file_threshold": 10,
+  "repos_enabled": {
+    "ecc": true,
+    "superpowers": true,
+    "gsd-core": true,
+    "ponytail": true,
+    "graphify": true,
+    "claude-obsidian": true,
+    "obsidian-skills": true,
+    "karpathy-skills": true,
+    "ui-ux-pro-max": true,
+    "open-design": false
+  }
+}

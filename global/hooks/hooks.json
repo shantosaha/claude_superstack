@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'V=\"$CLAUDE_PROJECT_DIR/.vault\"; if [ -f \"$V/hot.md\" ]; then echo \"=== SUPERSTACK MEMORY (silent) ===\"; cat \"$V/hot.md\"; fi; if [ -f \"$V/index.md\" ]; then echo \"=== VAULT INDEX ===\"; head -60 \"$V/index.md\"; fi' 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'V=\"$CLAUDE_PROJECT_DIR/.vault\"; if [ -d \"$V\" ] && [ -f \"$V/hot.md\" ]; then tail -n 50 \"$V/hot.md\" > \"$V/.hot.tmp\" && mv \"$V/.hot.tmp\" \"$V/hot.md\"; fi' 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

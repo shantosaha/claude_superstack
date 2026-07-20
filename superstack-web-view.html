@@ -1,0 +1,4314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>claude_superstack — Complete Reference</title>
+<style>
+:root {
+  --bg:#f7f5f2;--bg2:#fff;--panel:#fff;--panel2:#f0ede8;--panel3:#e8e4de;
+  --line:#d6d0c8;--line-soft:#e4dfd8;--text:#1a1714;--text2:#2d2924;
+  --muted:#6b6158;--muted2:#9a9088;--accent:#c47a2a;--accent-soft:rgba(196,122,42,.10);
+  --accent2:#3a7a52;--accent2-soft:rgba(58,122,82,.10);
+  --accent3:#3566a0;--accent3-soft:rgba(53,102,160,.10);
+  --accent4:#a84848;--accent4-soft:rgba(168,72,72,.10);
+  --code-bg:#f0ede8;--code-border:#d6d0c8;--pre-bg:#1c1a19;--pre-text:#d8cfc2;
+  --table-header-bg:#f0ede8;--table-header-text:#c47a2a;--table-hover:#f5f2ed;--table-stripe:#faf8f5;
+  --shadow:0 1px 6px rgba(0,0,0,.06);--nav-bg:rgba(248,246,243,.94);
+  --mark-bg:#ffd96e;--mark-text:#1a1714;--sidebar-bg:#f0ede8;--sidebar-w:260px;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --maxw:780px;
+  color-scheme:light dark;
+}
+@media(prefers-color-scheme:dark){:root:not(.force-light){
+  --bg:#151313;--bg2:#100f0e;--panel:#1c1a19;--panel2:#211f1e;--panel3:#262321;
+  --line:#3a3634;--line-soft:#2a2726;--text:#f2ede6;--text2:#ddd4c8;
+  --muted:#a89d92;--muted2:#7d746b;--accent:#e0a05a;--accent-soft:rgba(224,160,90,.14);
+  --accent2:#7fa88f;--accent2-soft:rgba(127,168,143,.14);
+  --accent3:#8aa6c9;--accent3-soft:rgba(138,166,201,.14);
+  --accent4:#c98a8a;--accent4-soft:rgba(201,138,138,.14);
+  --code-bg:#211f1e;--code-border:#3a3634;--pre-bg:#0f0e0d;--pre-text:#d8cfc2;
+  --table-header-bg:#211f1e;--table-header-text:#e0a05a;--table-hover:#262321;--table-stripe:#1c1a19;
+  --shadow:0 1px 6px rgba(0,0,0,.3);--nav-bg:rgba(21,19,19,.92);
+  --mark-bg:#e0a05a;--mark-text:#151313;--sidebar-bg:#1c1a19;
+}
+}
+:root.force-dark{
+  --bg:#151313;--bg2:#100f0e;--panel:#1c1a19;--panel2:#211f1e;--panel3:#262321;
+  --line:#3a3634;--line-soft:#2a2726;--text:#f2ede6;--text2:#ddd4c8;
+  --muted:#a89d92;--muted2:#7d746b;--accent:#e0a05a;--accent-soft:rgba(224,160,90,.14);
+  --accent2:#7fa88f;--accent2-soft:rgba(127,168,143,.14);
+  --accent3:#8aa6c9;--accent3-soft:rgba(138,166,201,.14);
+  --accent4:#c98a8a;--accent4-soft:rgba(201,138,138,.14);
+  --code-bg:#211f1e;--code-border:#3a3634;--pre-bg:#0f0e0d;--pre-text:#d8cfc2;
+  --table-header-bg:#211f1e;--table-header-text:#e0a05a;--table-hover:#262321;--table-stripe:#1c1a19;
+  --shadow:0 1px 6px rgba(0,0,0,.3);--nav-bg:rgba(21,19,19,.92);
+  --mark-bg:#e0a05a;--mark-text:#151313;--sidebar-bg:#1c1a19;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);-webkit-font-smoothing:antialiased;line-height:1.6;transition:background .25s,color .25s;}
+::selection{background:var(--accent);color:var(--bg);}
+
+/* ---- progress ---- */
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));width:0%;z-index:999;}
+
+/* ---- sidebar ---- */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--line-soft);z-index:80;overflow-y:auto;padding:20px 0;transition:transform .3s ease,background .25s;}
+.sidebar-header{display:flex;align-items:center;gap:9px;padding:0 20px 20px;border-bottom:1px solid var(--line-soft);margin-bottom:14px;}
+.sidebar-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.sidebar-brand{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text);}
+.sidebar-sections{padding:0 10px;}
+.side-link{display:block;font-family:var(--mono);font-size:12.5px;color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px;margin-bottom:2px;transition:.15s;letter-spacing:.01em;}
+.side-link:hover{color:var(--text);background:var(--panel);}
+.side-link.active{color:var(--accent);background:var(--accent-soft);font-weight:600;}
+.side-sub{padding-left:12px;max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.side-sub.open{max-height:400px;}
+.side-sub-link{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted2);text-decoration:none;padding:5px 12px;border-left:2px solid var(--line-soft);margin-left:6px;transition:.15s;}
+.side-sub-link:hover{color:var(--text);border-color:var(--accent);}
+.side-sub-link.active{color:var(--accent);border-color:var(--accent);}
+.sidebar-controls{padding:14px 20px 0;border-top:1px solid var(--line-soft);margin-top:14px;display:flex;gap:8px;}
+.sidebar-btn{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 10px;font-size:14px;cursor:pointer;transition:.15s;flex:1;text-align:center;}
+.sidebar-btn:hover{border-color:var(--accent);color:var(--accent);}
+#sidebarToggle{display:none;position:fixed;top:12px;left:12px;z-index:85;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;font-size:16px;cursor:pointer;box-shadow:var(--shadow);}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.15);}
+  #sidebarToggle{display:block;}
+  .main-content{margin-left:0!important;}
+}
+
+/* ---- main content ---- */
+.main-content{margin-left:var(--sidebar-w);transition:margin-left .3s;}
+
+/* ---- search bar ---- */
+.search-bar{position:sticky;top:0;z-index:70;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--line-soft);padding:10px 32px;display:flex;align-items:center;gap:12px;}
+#search{background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:12.5px;padding:8px 14px 8px 32px;border-radius:999px;width:260px;transition:.2s;}
+#search:focus{outline:none;border-color:var(--accent);width:340px;}
+.search-bar::before{content:"\2315";position:absolute;left:44px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:15px;pointer-events:none;}
+#searchcount{font-family:var(--mono);font-size:10.5px;color:var(--muted2);display:none;}
+mark.hit{background:var(--mark-bg);color:var(--mark-text);border-radius:2px;padding:0 2px;}
+
+/* ---- sections ---- */
+.doc-section{max-width:var(--maxw);margin:0 auto;padding:64px 32px;scroll-margin-top:60px;}
+.doc-section:not(:last-of-type){border-bottom:1px solid var(--line-soft);}
+.section-head{margin-bottom:32px;}
+.section-eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s;}
+.section-head h2{font-size:clamp(24px,3.2vw,34px);font-weight:600;margin:0 0 10px;opacity:0;transform:translateY(10px);transition:opacity .5s .05s,transform .5s .05s;}
+.section-head p{color:var(--muted);font-size:15px;max-width:600px;opacity:0;transform:translateY(10px);transition:opacity .5s .1s,transform .5s .1s;}
+.doc-section.inview .section-eyebrow,.doc-section.inview .section-head h2,.doc-section.inview .section-head p{opacity:1;transform:translateY(0);}
+
+/* ---- hero ---- */
+.hero{max-width:var(--maxw);margin:0 auto;padding:80px 32px 56px;position:relative;}
+.hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;animation:fadeUp .7s ease both;}
+.hero h1{font-size:clamp(30px,4.5vw,50px);font-weight:600;line-height:1.08;margin:0 0 16px;animation:fadeUp .8s ease .1s both;}
+.hero h1 .aw{color:var(--accent);}
+.hero .sub{color:var(--muted);font-size:16px;max-width:580px;line-height:1.6;margin-bottom:28px;animation:fadeUp .8s ease .2s both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:620px;animation:fadeUp .8s ease .3s both;}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 12px;box-shadow:var(--shadow);}
+.stat .num{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--accent);line-height:1;}
+.stat .lbl{font-size:11px;color:var(--muted);margin-top:5px;}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;animation:fadeUp .8s ease .38s both;}
+.cta-btn{font-family:var(--mono);font-size:12px;padding:9px 16px;border-radius:999px;text-decoration:none;transition:.15s;border:1px solid var(--line);}
+.cta-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;}
+.cta-btn.primary:hover{opacity:.85;}
+.cta-btn.ghost{color:var(--muted);}
+.cta-btn.ghost:hover{color:var(--text);border-color:var(--accent);}
+
+/* ---- md content ---- */
+.md-content h1{font-size:22px;font-weight:600;margin:36px 0 12px;color:var(--text);scroll-margin-top:70px;}
+.md-content h1:first-child{margin-top:0;}
+.md-content h2{font-size:19px;font-weight:600;margin:30px 0 10px;color:var(--text);padding-bottom:7px;border-bottom:1px solid var(--line-soft);scroll-margin-top:72px;} [id^="sec-"]{scroll-margin-top:72px;}
+.md-content h3{font-size:15.5px;font-weight:600;margin:22px 0 8px;color:var(--accent3);scroll-margin-top:70px;}
+.md-content h4{font-size:13px;font-weight:600;margin:16px 0 7px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-family:var(--mono);}
+.md-content p{color:var(--text2);font-size:14.5px;margin:0 0 12px;line-height:1.7;}
+.md-content ul,.md-content ol{color:var(--text2);font-size:14.5px;line-height:1.7;margin:0 0 14px;padding-left:20px;}
+.md-content li{margin-bottom:3px;}
+.md-content strong{color:var(--text);font-weight:700;}
+.md-content em{color:var(--accent2);}
+.md-content a{color:var(--accent3);text-decoration:none;border-bottom:1px solid var(--accent3-soft);}
+.md-content code{font-family:var(--mono);background:var(--code-bg);border:1px solid var(--code-border);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--accent);}
+.md-content pre{background:var(--pre-bg);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0 0 16px;}
+.md-content pre code{background:none;border:none;padding:0;color:var(--pre-text);font-size:12.5px;line-height:1.6;}
+.md-content blockquote{border-left:3px solid var(--accent);margin:0 0 14px;padding:3px 0 3px 16px;color:var(--muted);font-style:italic;}
+.md-content hr{border:none;border-top:1px solid var(--line-soft);margin:28px 0;}
+.table-wrap{overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);}
+.md-content table{width:100%;border-collapse:collapse;font-size:13px;}
+.md-content thead tr{background:var(--table-header-bg);}
+.md-content th{font-family:var(--mono);font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--table-header-text);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+.md-content td{padding:8px 12px;border-bottom:1px solid var(--line-soft);color:var(--text2);}
+.md-content tbody tr:hover{background:var(--table-hover);}
+.md-content tbody tr:nth-child(even){background:var(--table-stripe);}
+.md-content tbody tr:last-child td{border-bottom:none;}
+
+/* ---- command filter ---- */
+.cmd-filter{margin-bottom:20px;}
+#cmdSearch{background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:12.5px;padding:9px 14px;border-radius:10px;width:100%;max-width:400px;transition:.2s;}
+#cmdSearch:focus{outline:none;border-color:var(--accent);}
+.cmd-count{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-top:6px;}
+
+/* ---- repo accordion ---- */
+.repo-accordion{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s;}
+.repo-accordion:hover{box-shadow:0 2px 12px rgba(0,0,0,.08);}
+.repo-accordion summary{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--panel2);cursor:pointer;font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);list-style:none;transition:background .15s;}
+.repo-accordion summary::-webkit-details-marker{display:none;}
+.repo-accordion summary:hover{background:var(--panel3);}
+.repo-accordion .chevron{color:var(--accent);font-size:14px;transition:transform .25s;}
+.repo-accordion[open] .chevron{transform:rotate(90deg);}
+.repo-accordion .repo-body{padding:18px;background:var(--panel);animation:slideDown .3s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---- inline diagram scope ---- */
+.diagrams-scope .diagram{margin:24px 0 32px;}
+.diagrams-scope .dhead{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+.diagrams-scope .dnum{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.1em;}
+.diagrams-scope h3{font-size:19px;font-weight:600;margin:0;color:var(--text);border:none;padding:0;}
+.diagrams-scope .dcap{color:var(--muted);font-size:13.5px;margin:10px 0 24px;line-height:1.6;}
+.diagrams-scope .arch{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:760px){.diagrams-scope .arch{grid-template-columns:1fr;}}
+.diagrams-scope .col{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);}
+.diagrams-scope .col-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.diagrams-scope .col-label::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent2);}
+.diagrams-scope .col.global .col-label{color:var(--accent);}
+.diagrams-scope .col.global .col-label::before{background:var(--accent);}
+.diagrams-scope .path{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-bottom:8px;}
+.diagrams-scope .node{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:5px;font-size:12.5px;}
+.diagrams-scope .node .t{font-weight:600;font-family:var(--mono);font-size:11.5px;color:var(--text);}
+.diagrams-scope .node .d{color:var(--muted);font-size:11px;margin-top:2px;line-height:1.4;}
+.diagrams-scope .node.hi{border-color:var(--accent);}
+.diagrams-scope .node.hi .t{color:var(--accent);}
+.diagrams-scope .indent{margin-left:12px;border-left:2px solid var(--line);padding-left:10px;margin-bottom:5px;}
+.diagrams-scope .arrow-between{grid-column:1/-1;text-align:center;font-family:var(--mono);color:var(--accent);font-size:11.5px;padding:4px 0;}
+.diagrams-scope .step{display:grid;grid-template-columns:46px 1fr;gap:14px;position:relative;padding-bottom:2px;}
+.diagrams-scope .step:not(:last-child) .stepline{position:absolute;left:22px;top:46px;bottom:-2px;width:2px;background:var(--line);}
+.diagrams-scope .stepnum{width:46px;height:46px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--accent);flex-shrink:0;z-index:1;}
+.diagrams-scope .stepbody{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:16px;box-shadow:var(--shadow);}
+.diagrams-scope .stepbody h4{margin:0 0 6px;font-size:14px;font-weight:600;color:var(--text);text-transform:none;letter-spacing:0;font-family:var(--serif);}
+.diagrams-scope .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;display:inline-block;margin-bottom:7px;}
+.diagrams-scope .tag.silent{background:var(--accent2-soft);color:var(--accent2);border:1px solid rgba(58,122,82,.2);}
+.diagrams-scope .tag.active{background:var(--accent-soft);color:var(--accent);border:1px solid rgba(196,122,42,.2);}
+.diagrams-scope .tag.gate{background:var(--accent4-soft);color:var(--accent4);border:1px solid rgba(168,72,72,.2);}
+.diagrams-scope .stepbody p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.6;}
+.diagrams-scope .stepbody code{font-family:var(--mono);background:var(--code-bg);padding:1px 5px;border-radius:3px;font-size:11.5px;color:var(--accent3);}
+.diagrams-scope .previewbox{margin-top:8px;background:var(--pre-bg);border:1px solid var(--line);border-radius:7px;padding:9px 12px;font-family:var(--mono);font-size:11px;color:var(--accent2);line-height:1.7;}
+.diagrams-scope .layers{display:flex;flex-direction:column;gap:7px;}
+.diagrams-scope .layer{display:grid;grid-template-columns:180px 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow);}
+@media(max-width:680px){.diagrams-scope .layer{grid-template-columns:1fr;}}
+.diagrams-scope .layer-name{padding:12px 14px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);background:var(--panel2);}
+@media(max-width:680px){.diagrams-scope .layer-name{border-right:none;border-bottom:1px solid var(--line);}}
+.diagrams-scope .layer-name .num{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:2px;}
+.diagrams-scope .layer-name .name{font-weight:600;font-size:13px;}
+.diagrams-scope .layer-repos{padding:10px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.diagrams-scope .chip{font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--panel);white-space:nowrap;}
+.diagrams-scope .layer:nth-child(1) .num,.diagrams-scope .layer:nth-child(1) .chip{border-color:var(--accent3);color:var(--accent3);}
+.diagrams-scope .layer:nth-child(2) .num,.diagrams-scope .layer:nth-child(2) .chip{border-color:var(--accent4);color:var(--accent4);}
+.diagrams-scope .layer:nth-child(3) .num,.diagrams-scope .layer:nth-child(3) .chip{border-color:var(--accent);color:var(--accent);}
+.diagrams-scope .layer:nth-child(4) .num,.diagrams-scope .layer:nth-child(4) .chip{border-color:var(--accent2);color:var(--accent2);}
+.diagrams-scope .layer:nth-child(5) .num,.diagrams-scope .layer:nth-child(5) .chip{border-color:var(--accent3);color:var(--accent3);}
+.diagrams-scope .layer:nth-child(6) .num,.diagrams-scope .layer:nth-child(6) .chip{border-color:var(--accent4);color:var(--accent4);}
+.diagrams-scope .layer:nth-child(7) .num,.diagrams-scope .layer:nth-child(7) .chip{border-color:var(--accent);color:var(--accent);}
+
+/* ---- back to top ---- */
+#toTop{position:fixed;right:18px;bottom:18px;width:40px;height:40px;border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;opacity:0;pointer-events:none;transition:.2s;z-index:80;box-shadow:var(--shadow);}
+#toTop.show{opacity:1;pointer-events:auto;}
+
+footer{max-width:var(--maxw);margin:0 auto;padding:40px 32px 70px;color:var(--muted2);font-family:var(--mono);font-size:11.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line-soft);}
+footer a{color:var(--accent3);text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<button id="sidebarToggle">☰</button>
+
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-dot"></span>
+    <span class="sidebar-brand">claude_superstack</span>
+  </div>
+  <div class="sidebar-sections">
+    <a href="#overview" class="side-link active" data-section="overview">Overview</a>
+    <a href="#architecture" class="side-link" data-section="architecture">Architecture</a>
+    <a href="#how-it-works" class="side-link" data-section="how-it-works">How It Works</a>
+    <div class="side-sub">
+      <a href="#sec-router" class="side-sub-link">The Router</a>
+      <a href="#sec-lifecycle" class="side-sub-link">Prompt Lifecycle</a>
+      <a href="#sec-memory" class="side-sub-link">Memory System</a>
+      <a href="#sec-preview" class="side-sub-link">Preview Protocol</a>
+      <a href="#sec-ponytail" class="side-sub-link">Ponytail</a>
+      <a href="#sec-skills" class="side-sub-link">Skills &amp; Agents</a>
+      <a href="#sec-hooks" class="side-sub-link">Hooks</a>
+      <a href="#sec-intent" class="side-sub-link">Intent Table</a>
+    </div>
+    <a href="#user-guide" class="side-link" data-section="user-guide">User Guide</a>
+    <a href="#commands" class="side-link" data-section="commands">Commands</a>
+    <a href="#repos" class="side-link" data-section="repos">10-Repo Reference</a>
+    <a href="#extras" class="side-link" data-section="extras">Internals</a>
+  </div>
+</nav>
+
+<div class="main-content">
+  <div class="search-bar">
+    <input id="search" type="text" placeholder="Search everything…" autocomplete="off">
+    <span id="searchcount"></span>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero doc-section" id="overview">
+    <div class="eyebrow">claude_superstack · complete reference</div>
+    <h1>Ten frameworks. One <span class="aw">router</span>.<br>Every project.</h1>
+    <p class="sub">System architecture, user guide, 113+ commands, and full 10-repo reference — restructured into a single interactive page with inline diagrams. Nothing skipped.</p>
+    <div class="stats">
+      <div class="stat"><div class="num" data-count="10">0</div><div class="lbl">Integrated repos</div></div>
+      <div class="stat"><div class="num" data-count="113">0</div><div class="lbl">Total commands</div></div>
+      <div class="stat"><div class="num" data-count="7">0</div><div class="lbl">Functional layers</div></div>
+      <div class="stat"><div class="num" data-count="4">0</div><div class="lbl">Source documents</div></div>
+    </div>
+    <div class="hero-cta">
+      <a href="#architecture" class="cta-btn primary">Architecture →</a>
+      <a href="#how-it-works" class="cta-btn ghost">How It Works</a>
+      <a href="#user-guide" class="cta-btn ghost">User Guide</a>
+      <a href="#commands" class="cta-btn ghost">Commands</a>
+    </div>
+
+    <div class="md-content" style="margin-top:40px;">
+      <h2>What Is SuperStack</h2>
+<p><strong>claude_superstack</strong> is a unification layer that sits on top of Claude Code and
+wires together 10 independent open-source frameworks so they act as ONE coherent
+system instead of 10 separate tools you'd have to remember to invoke.</p>
+<p>Without SuperStack, using these 10 repos looks like this:</p>
+<pre><code>You: &quot;add auth to login page&quot;
+You manually think: &quot;should I use GSD or ECC to plan this?&quot;
+You manually type: /gsd-plan-feature
+You manually think: &quot;I should check the design system&quot;
+You manually type: uipro search &quot;auth form&quot;
+You manually type: /execute-plan
+You manually remember: &quot;did I run code review?&quot;
+You manually type: /ecc:code-review
+You manually think: &quot;should I save this to my notes?&quot;
+You manually type: /save
+</code></pre>
+<p>With SuperStack, it looks like this:</p>
+<pre><code>You: &quot;add auth to login page&quot;
+Claude: &quot;→ Plan: /gsd-plan-feature, Design: uipro search 'auth form',
+         Build: /execute-plan, Review: /ecc:code-review. Proceed?&quot;
+You: &quot;yes&quot;
+[everything runs, memory auto-updates]
+</code></pre>
+<p>SuperStack does NOT replace any of the 10 repos. It does not fork or modify their
+code. It is a <strong>routing + memory + discipline layer</strong> written as instructions
+(<code>CLAUDE.md</code>), automation (<code>hooks.json</code>), and a small CLI (<code>superstack</code>) that
+installs, initializes, and maintains the whole stack.</p>
+<h3>The Core Idea in One Sentence</h3>
+<blockquote>
+<p>Talk to Claude normally. SuperStack decides which of the 10 frameworks (and
+which specific commands, skills, and agents inside them) should handle your
+request, shows you a one-line preview, and remembers everything for next time.</p>
+</blockquote>
+<hr />
+<hr />
+<h2>The 10 Repos &amp; Their Roles</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Repo</th>
+<th>GitHub</th>
+<th>Role</th>
+<th>Fires When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>ECC</strong></td>
+<td>affaan-m/ECC</td>
+<td>Quality, security, optimization</td>
+<td>Code review, security scan, build fix, quality gates</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Superpowers</strong></td>
+<td>obra/superpowers</td>
+<td>Workflow methodology</td>
+<td>Brainstorm → plan → execute structure</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>GSD Core</strong></td>
+<td>open-gsd/gsd-core</td>
+<td>Long-feature context management</td>
+<td>Multi-phase features, big/risky work</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Ponytail</strong></td>
+<td>DietrichGebert/ponytail</td>
+<td>Code minimalism, token efficiency</td>
+<td>EVERY prompt (always-on)</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Graphify</strong></td>
+<td>Graphify-Labs/graphify</td>
+<td>Code knowledge graph</td>
+<td>Understanding codebase, locating files</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>claude-obsidian</strong></td>
+<td>AgriciDaniel/claude-obsidian</td>
+<td>Personal knowledge vault</td>
+<td>Memory read/write, research, notes</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>obsidian-skills</strong></td>
+<td>kepano/obsidian-skills</td>
+<td>Correct vault file operations</td>
+<td>Any vault/markdown/canvas operation</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>andrej-karpathy-skills</strong></td>
+<td>multica-ai/andrej-karpathy-skills</td>
+<td>Coding discipline</td>
+<td>EVERY prompt (always-on)</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>ui-ux-pro-max-skill</strong></td>
+<td>nextlevelbuilder/ui-ux-pro-max-skill</td>
+<td>Design intelligence database</td>
+<td>UI/UX/design-related work</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>open-design</strong></td>
+<td>nexu-io/open-design</td>
+<td>Design artifact generation</td>
+<td>Generating prototypes/decks/images (optional)</td>
+</tr>
+</tbody>
+</table>
+<h3>Why These 10 and Not More/Fewer</h3>
+<p>Each repo covers a <strong>distinct layer</strong> with minimal overlap:</p>
+<pre><code>KNOWLEDGE LAYER      →  claude-obsidian, obsidian-skills, graphify
+DISCIPLINE LAYER     →  andrej-karpathy-skills
+MINIMIZATION LAYER   →  ponytail
+WORKFLOW LAYER       →  superpowers
+CONTEXT LAYER        →  gsd-core
+QUALITY LAYER        →  ecc
+DESIGN LAYER         →  ui-ux-pro-max-skill, open-design
+</code></pre>
+<p>No repo is redundant. If you removed any one, you'd lose a distinct capability
+(e.g., remove Graphify → Claude can't map your codebase; remove Ponytail →
+no automatic token/code minimalism).</p>
+<hr />
+    </div>
+
+    <!-- 7-layer diagram inline here -->
+    <div class="diagrams-scope"><section class="diagram" id="diagram-layers">
+    <div class="dhead">
+      <span class="dnum">03</span>
+      <h2>Seven functional layers, ten repos</h2>
+    </div>
+    <p class="dcap">Every repo covers a distinct layer with almost no overlap — remove any one and you lose a specific capability.</p>
+
+    <div class="layers">
+      <div class="layer">
+        <div class="layer-name"><div class="num">01</div><div class="name">Knowledge / Memory</div></div>
+        <div class="layer-repos">
+          <span class="chip">claude-obsidian</span>
+          <span class="chip">obsidian-skills</span>
+          <span class="chip">graphify</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">02</div><div class="name">Discipline</div></div>
+        <div class="layer-repos"><span class="chip">andrej-karpathy-skills</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">03</div><div class="name">Minimization / tokens</div></div>
+        <div class="layer-repos"><span class="chip">ponytail</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">04</div><div class="name">Workflow</div></div>
+        <div class="layer-repos"><span class="chip">superpowers</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">05</div><div class="name">Context management</div></div>
+        <div class="layer-repos"><span class="chip">gsd-core</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">06</div><div class="name">Quality</div></div>
+        <div class="layer-repos"><span class="chip">ecc</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name"><div class="num">07</div><div class="name">Design</div></div>
+        <div class="layer-repos">
+          <span class="chip">ui-ux-pro-max-skill</span>
+          <span class="chip">open-design (optional)</span>
+        </div>
+      </div>
+    </div>
+  </section></div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="doc-section" id="architecture">
+    <div class="section-head">
+      <div class="section-eyebrow">02 · System structure</div>
+      <h2>Architecture</h2>
+      <p>How the global layer and per-project layer fit together.</p>
+    </div>
+    <div class="diagrams-scope"><section class="diagram" id="diagram-arch">
+    <div class="dhead">
+      <span class="dnum">01</span>
+      <h2>Global layer + per-project layer</h2>
+    </div>
+    <p class="dcap">Everything under <code>~/.claude/</code> installs once and applies to every project. Each project you initialize gets its own isolated memory folders.</p>
+
+    <div class="arch">
+      <div class="col global">
+        <div class="col-label">Global — installed once</div>
+        <div class="path">~/.claude/</div>
+        <div class="node hi">
+          <div class="t">CLAUDE.md</div>
+          <div class="d">The Master Router — read every session, followed on every prompt</div>
+        </div>
+        <div class="node">
+          <div class="t">hooks/hooks.json</div>
+          <div class="d">SessionStart memory injection · Stop cache rotation</div>
+        </div>
+        <div class="node">
+          <div class="t">plugins/</div>
+          <div class="d">ECC · Superpowers · Ponytail · claude-obsidian · obsidian-skills · karpathy-skills · ui-ux-pro-max</div>
+        </div>
+        <div class="node">
+          <div class="t">commands/</div>
+          <div class="d">GSD Core's slash commands land here</div>
+        </div>
+        <div class="node">
+          <div class="t">superstack/</div>
+          <div class="d">CLI (bin/), router source (global/), project templates (templates/)</div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-label">Per project — created by init / migrate</div>
+        <div class="path">my-project/</div>
+        <div class="node hi">
+          <div class="t">CLAUDE.md</div>
+          <div class="d">Inherits the global router + project-specific notes</div>
+        </div>
+        <div class="node">
+          <div class="t">.vault/</div>
+          <div class="d">This project's Obsidian memory</div>
+        </div>
+        <div class="indent">
+          <div class="node"><div class="t">hot.md</div><div class="d">rolling ~50-line recent context</div></div>
+          <div class="node"><div class="t">index.md</div><div class="d">table of contents of vault topics</div></div>
+          <div class="node"><div class="t">wiki/</div><div class="d">individual linked knowledge pages</div></div>
+        </div>
+        <div class="node">
+          <div class="t">.graphify/</div>
+          <div class="d">This project's code knowledge graph (graph.json, graph.html)</div>
+        </div>
+        <div class="node">
+          <div class="t">.superstack.json</div>
+          <div class="d">Per-project config — ponytail level, enabled repos</div>
+        </div>
+      </div>
+
+      <div class="arrow-between">↑ one global install powers ↓ every project below, independently ↑</div>
+    </div>
+  </section></div>
+    <div class="md-content"><h2>Global Architecture</h2>
+<p>Everything SuperStack installs globally lives under <code>~/.claude/</code>:</p>
+<pre><code>~/.claude/                                   ← Claude Code's global config folder
+│
+├── CLAUDE.md                                ← MASTER ROUTER (read every session)
+│   (this is the &quot;brain&quot; — see Section 5)
+│
+├── hooks/
+│   └── hooks.json                           ← SessionStart + Stop automation
+│
+├── plugins/                                 ← installed by `claude plugin install`
+│   ├── ecc/
+│   ├── superpowers/
+│   ├── ponytail/
+│   ├── claude-obsidian/
+│   ├── obsidian-skills/
+│   ├── andrej-karpathy-skills/
+│   └── ui-ux-pro-max/
+│
+├── commands/                                ← gsd-core's slash commands land here
+│   ├── gsd-new-project.md
+│   ├── gsd-plan-feature.md
+│   └── ...
+│
+└── superstack/                              ← SuperStack's own home
+    ├── bin/
+    │   ├── superstack                       ← CLI (Mac/Linux)
+    │   └── superstack.ps1                   ← CLI (Windows)
+    ├── global/
+    │   ├── CLAUDE.md                        ← source copy of the router
+    │   └── hooks/hooks.json                 ← source copy of hooks
+    └── templates/                           ← copied into every new project
+        ├── CLAUDE.project.md
+        ├── superstack.json
+        └── vault/
+            ├── hot.md
+            ├── index.md
+            ├── log.md
+            └── wiki/
+</code></pre>
+<p><strong>Key principle:</strong> everything global applies to <strong>every project on your
+machine</strong>, automatically. You install once; every folder you ever run
+<code>superstack init</code> or <code>superstack migrate</code> on inherits it.</p>
+<hr />
+<hr />
+<h2>Per-Project Architecture</h2>
+<p>Every SuperStack-enabled project looks like this:</p>
+<pre><code>my-project/
+├── CLAUDE.md              ← inherits global router + project-specific notes
+├── .vault/                ← THIS project's Obsidian vault (memory)
+│   ├── hot.md              ← rolling recent-context cache (last ~50 lines)
+│   ├── index.md            ← table of contents: what topics exist
+│   ├── log.md               ← history of ingestions/sessions
+│   └── wiki/                ← individual knowledge pages (Markdown)
+├── .graphify/              ← THIS project's code knowledge graph
+│   ├── graph.json
+│   ├── graph.html          ← open in browser to visually explore
+│   └── GRAPH_REPORT.md
+├── .superstack.json        ← per-project config (ponytail level, toggles)
+└── src/... (your actual code, untouched)
+</code></pre>
+<p><strong>Why per-project instead of one shared vault:</strong> each project's memory stays
+isolated and portable. Clone/fork the project → the memory comes with it.
+Open <code>.vault/</code> directly in the Obsidian app to visually browse that project's
+knowledge graph.</p>
+<hr /></div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="doc-section" id="how-it-works">
+    <div class="section-head">
+      <div class="section-eyebrow">03 · Under the hood</div>
+      <h2>How It Works</h2>
+      <p>The router, the 7-step lifecycle, memory, preview protocol, and everything that fires on each prompt.</p>
+    </div>
+    <div class="md-content" id="sec-router">
+      <!-- Router section (§5) is first h2 inside how_it_works -->
+    </div>
+    <div class="diagrams-scope" id="sec-lifecycle"><section class="diagram" id="diagram-lifecycle">
+    <div class="dhead">
+      <span class="dnum">02</span>
+      <h2>What happens on every prompt</h2>
+    </div>
+    <p class="dcap">The router's seven steps, run in order, every single time you type something into Claude Code.</p>
+
+    <div class="lifecycle">
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">0</div>
+        <div class="stepbody">
+          <span class="tag active">always-on</span>
+          <h3>Discipline layer loads</h3>
+          <p>Karpathy guidelines apply automatically: no silent assumptions, goal-driven execution, anti-overcomplication, never rewrite code you don't understand.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">1</div>
+        <div class="stepbody">
+          <span class="tag silent">silent · 0 tokens</span>
+          <h3>Memory-first check</h3>
+          <p>Reads <code>.vault/hot.md</code>, <code>.vault/index.md</code>, and queries <code>graphify</code> for relevant files — before ever asking you for context.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">2</div>
+        <div class="stepbody">
+          <span class="tag active">always-on</span>
+          <h3>Ponytail auto-levels</h3>
+          <p>Quick fix → <code>ultra</code> · normal feature → <code>full</code> · complex/unfamiliar → <code>lite</code>. Overridable any time with <code>/ponytail &lt;level&gt;</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">3</div>
+        <div class="stepbody">
+          <span class="tag active">routing</span>
+          <h3>Intent routing</h3>
+          <p>Your prompt is matched against the intent table and mapped to a tool chain — e.g. feature + UI work routes through GSD, ui-ux-pro-max, Superpowers, and ECC in sequence.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">4</div>
+        <div class="stepbody">
+          <span class="tag gate">confirmation gate</span>
+          <h3>Preview + confirm</h3>
+          <p>One line per command, plus a file-count estimate. <code>/skip</code> waives it for normal tasks only — heavy (&gt;10 files) and destructive actions always show, no exceptions.</p>
+          <div class="previewbox">→ /gsd-plan-feature (structure work)<br>→ uipro search "auth form" (design pattern)<br>→ /execute-plan (build) → /ecc:code-review (verify)<br>~4 files affected. Proceed?</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepline"></div>
+        <div class="stepnum">5</div>
+        <div class="stepbody">
+          <span class="tag active">execution</span>
+          <h3>Execute the chain</h3>
+          <p>Skills auto-apply, agents launch where relevant, output stays minimal (ponytail), ECC quality gates verify before anything is declared done.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepnum">6</div>
+        <div class="stepbody">
+          <span class="tag silent">silent write-back</span>
+          <h3>Memory updates</h3>
+          <p><code>.vault/hot.md</code> gets a short summary, <code>.vault/index.md</code> updates if new topics appeared, changed files are noted for the next graphify pass. Never announced.</p>
+        </div>
+      </div>
+
+    </div>
+  </section></div>
+    <div class="md-content" id="sec-memory"><h2 id="sec-router">The Master Router (The Brain)</h2>
+<p>The single most important file in SuperStack is <code>~/.claude/CLAUDE.md</code>. This is
+not code — it's a <strong>set of natural-language instructions</strong> that Claude reads at
+the start of every session and follows on every single prompt. Claude Code
+supports this natively: any <code>CLAUDE.md</code> in the global config or project root is
+automatically loaded into context.</p>
+<p>The router contains 7 numbered steps that Claude executes, in order, for every
+prompt:</p>
+<pre><code>STEP 0 → Always-on discipline (Karpathy guidelines)
+STEP 1 → Memory-first check (vault + graphify, silent)
+STEP 2 → Ponytail auto-leveling
+STEP 3 → Intent routing (match prompt → tool chain)
+STEP 4 → Preview + confirmation
+STEP 5 → Execute the chain
+STEP 6 → Silent memory write-back
+</code></pre>
+<p>Think of it as a <strong>flowchart written in English</strong> that Claude follows instead
+of a human following a checklist. Because Claude is a language model, it can
+interpret "detect intent" and "classify heavy vs normal" using judgment — this
+is both the router's power (handles vague/messy prompts) and its limit (not
+100% mechanically deterministic — see Section 18).</p>
+<h3>Why a Markdown File Instead of Code</h3>
+<p>Claude Code's actual behavior is steered by natural-language system files, not
+by executable logic for "what Claude should think about." The deterministic
+parts (loading a file, running a script) ARE code — that's what hooks are for
+(Section 11). But routing decisions ("is this a bug fix or a feature?") require
+judgment, which only the router-as-instructions approach can provide.</p>
+<hr />
+<hr />
+<h2 id="sec-lifecycle-heading">The Full Prompt Lifecycle</h2>
+<p>Here is EXACTLY what happens, in order, every time you type a prompt into
+Claude Code with SuperStack active.</p>
+<pre><code>┌───────────────────────────────────────────────────────────────┐
+│  YOU TYPE A PROMPT                                             │
+└───────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ (Only on session start, not every prompt)                      │
+│ SessionStart HOOK fires automatically:                         │
+│   • cat .vault/hot.md        → recent context, 0 tokens        │
+│   • cat .vault/index.md      → what topics exist, 0 tokens     │
+│ This is injected into Claude's context before you even type.   │
+└───────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 0 — ALWAYS-ON DISCIPLINE (karpathy-skills)                │
+│   • No silent assumptions — ask if ambiguous                   │
+│   • Goal-driven execution — verify, don't just &quot;look done&quot;     │
+│   • Anti-overcomplication — minimum necessary code              │
+│   • Never delete/rewrite code you don't understand              │
+└───────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 1 — MEMORY FIRST CHECK (claude-obsidian + graphify)       │
+│ If the prompt needs context Claude doesn't have:                │
+│   • Read .vault/wiki/ pages related to the topic                │
+│   • Query graphify: &quot;which files relate to X?&quot;                  │
+│   • Only if nothing found → ask the user                        │
+│ This step is SILENT — no preview, because it costs 0 tokens     │
+│ (these are local file reads, not API calls).                    │
+└───────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 2 — PONYTAIL AUTO-LEVEL (ponytail)                         │
+│ Check .superstack.json:                                         │
+│   if ponytail_level != &quot;auto&quot;: use that value                  │
+│   else decide from task type:                                  │
+│     quick fix/one function      → ultra                        │
+│     normal feature work         → full  (default)              │
+│     complex/unfamiliar domain   → lite                         │
+└───────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 3 — INTENT ROUTING (the router's core logic)               │
+│ Claude matches your prompt against the intent table             │
+│ (Section 12) and picks a tool chain, e.g.:                      │
+│   &quot;add auth to login&quot; → feature+UI →                            │
+│   graphify query → /gsd-plan-feature → uipro search →           │
+│   /execute-plan → /ecc:code-review                               │
+│ If it's a planning task, Claude picks GSD vs ECC vs Superpowers  │
+│ intelligently based on size/risk/clarity of the task.            │
+└───────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 4 — PREVIEW + CONFIRM                                       │
+│ Claude classifies the task:                                     │
+│   SILENT      → memory reads (never previewed)                  │
+│   NORMAL      → preview shown, /skip works                      │
+│   HEAVY       → &gt;10 files or whole-codebase — preview ALWAYS     │
+│   DESTRUCTIVE → deletes/overwrites/resets — preview ALWAYS       │
+│ Preview looks like:                                              │
+│   &quot;→ /gsd-plan-feature (structure work), uipro search            │
+│      (design pattern), /execute-plan (build),                    │
+│      /ecc:code-review (verify). ~4 files. Proceed?&quot;              │
+└───────────────────────────────────────────────────────────────┘
+                    │  (you confirm, or say /skip for NORMAL tasks)
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 5 — EXECUTE                                                 │
+│ The chain runs. Skills auto-apply (Section 10). Agents launch    │
+│ where relevant. Ponytail keeps output minimal. ECC quality        │
+│ gates verify before declaring done.                               │
+└───────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 6 — SILENT MEMORY WRITE-BACK                                │
+│   • Append 2-5 line summary to .vault/hot.md                    │
+│   • Update .vault/index.md if new topics were created             │
+│   • Note affected files for the next graphify re-index           │
+│ Never announced. Happens automatically via the Stop hook.        │
+└───────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│ Stop HOOK fires automatically:                                   │
+│   • Trims hot.md to the last ~50 lines (keeps it small)           │
+└───────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<hr />
+<h2 id="sec-memory">Memory System (Vault + Graphify)</h2>
+<p>SuperStack's memory is <strong>two complementary systems</strong>, both local and free to read:</p>
+<h3>A) The Vault (claude-obsidian + obsidian-skills)</h3>
+<p>A folder of plain Markdown files that acts like a wiki about your project.</p>
+<pre><code>.vault/
+├── hot.md      → &quot;what happened recently&quot; — rolling ~50-line cache
+├── index.md    → table of contents — what topics/pages exist
+├── log.md      → history of every ingestion/session
+└── wiki/       → individual pages, one topic per file, cross-linked
+</code></pre>
+<ul>
+<li><strong>Writing to it</strong>: <code>ingest [file]</code> reads a source and breaks it into 8-15
+  linked wiki pages. <code>/save</code> files the current conversation as a note.</li>
+<li><strong>Reading from it</strong>: "what do we know about X?" makes Claude read <code>index.md</code>,
+  open relevant <code>wiki/</code> pages, and answer with citations to its own notes.</li>
+<li><strong>Why Markdown, not a database</strong>: it's human-readable, git-friendly, and
+  directly viewable/editable in the Obsidian app.</li>
+</ul>
+<h3>B) Graphify (code structure)</h3>
+<p>A knowledge graph built by analyzing your actual source code — not your notes,
+your code.</p>
+<pre><code>.graphify/
+├── graph.json        → machine-readable node/edge graph
+├── graph.html         → open in a browser — interactive visual graph
+└── GRAPH_REPORT.md    → human-readable summary: key files, &quot;god nodes&quot;, clusters
+</code></pre>
+<ul>
+<li><strong>Built by</strong>: <code>graphify run .</code> (parses code, extracts symbols/calls/imports)</li>
+<li><strong>Queried by</strong>: <code>graphify query "&lt;question&gt;"</code> — e.g. "what handles login?"</li>
+<li><strong>Why this matters</strong>: when you ask "why is this breaking," Claude can check
+  the graph for what recently connected to the broken file, instead of
+  guessing or re-reading your entire codebase from scratch.</li>
+</ul>
+<h3>Why Two Systems Instead of One</h3>
+<p>Vault = knowledge ABOUT the project (decisions, research, notes).
+Graphify = structure OF the project (which file calls which function).
+They answer different questions and are read together at Step 1.</p>
+<hr />
+<hr />
+<h2 id="sec-preview">Preview &amp; Confirmation Protocol</h2>
+<p>Every action Claude is about to take is classified into one of four buckets:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Examples</th>
+<th>Preview Shown?</th>
+<th><code>/skip</code> Works?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SILENT</strong></td>
+<td>Reading vault/graph, answering from memory</td>
+<td>Never</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><strong>NORMAL</strong></td>
+<td>Writing a function, fixing a small bug, a plan</td>
+<td>Always, by default</td>
+<td>✅ Yes — skips for this prompt only</td>
+</tr>
+<tr>
+<td><strong>HEAVY</strong></td>
+<td>&gt;10 files touched, full-codebase refactor, mass rename</td>
+<td>Always</td>
+<td>❌ No — shows regardless</td>
+</tr>
+<tr>
+<td><strong>DESTRUCTIVE</strong></td>
+<td>Deleting files, <code>git reset</code>, dropping data, overwriting the vault</td>
+<td>Always</td>
+<td>❌ No — shows regardless</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The <code>/skip</code> rule, precisely:</strong> typing <code>/skip</code> anywhere in your prompt skips
+the preview step ONLY if the task is classified NORMAL. It is never persistent
+— the very next prompt previews again unless you type <code>/skip</code> again. This is
+intentional: heavy/destructive actions must always get a human's eyes on them,
+no matter what.</p>
+<p><strong>Preview format</strong> — always one line per command, plus a file-count estimate:</p>
+<pre><code>→ /gsd-plan-feature (structure the work)
+→ uipro search &quot;auth form&quot; (find a design pattern)
+→ /execute-plan (implement)
+→ /ecc:code-review (verify quality)
+~4 files affected. Proceed?
+</code></pre>
+<hr />
+<hr />
+<h2 id="sec-ponytail">Ponytail: Token &amp; Code Optimization</h2>
+<p>Ponytail is active on <strong>every single prompt</strong>, not just when explicitly
+requested. It enforces:</p>
+<ul>
+<li><strong>YAGNI</strong> — "You Ain't Gonna Need It." Question whether a piece of code
+  needs to exist before writing it.</li>
+<li><strong>Standard library first</strong> — reach for built-in language/platform features
+  before adding a dependency.</li>
+<li><strong>Minimal solution</strong> — the shortest correct implementation wins. No
+  unrequested abstractions, no "future-proofing" nobody asked for.</li>
+</ul>
+<h3>Auto-Level Decision Logic</h3>
+<pre><code>IF .superstack.json has ponytail_level != &quot;auto&quot;:
+    USE that saved value
+ELSE decide from the task:
+    quick fix / one function        → ultra  (maximum minimalism)
+    normal feature work             → full   (balanced — the default)
+    complex/unfamiliar architecture  → lite   (more room to explore safely)
+</code></pre>
+<p>You can override anytime: <code>/ponytail lite|full|ultra|auto</code> — the choice is
+saved to <code>.superstack.json</code> and persists until you change it again.</p>
+<h3>Why This Also Saves Tokens</h3>
+<p>Minimal code means fewer tokens generated per response AND fewer tokens spent
+re-reading/re-explaining bloated code later. It compounds: less code to review,
+less code to maintain, less context needed to understand it next session.</p>
+<hr />
+<hr />
+<h2 id="sec-skills">Skills, Agents &amp; Sub-Agents</h2>
+<p>These are the three "working units" that actually do tasks. You never call
+them directly — the router selects them automatically at Step 3/5.</p>
+<h3>Skills — "how to do X"</h3>
+<p>A skill is a set of instructions/templates for a specific kind of work.
+Example: <code>tdd-workflow</code> (ECC) teaches "write the failing test first, then
+the implementation." When the router detects "write tests" intent, it applies
+this skill so Claude follows that specific method instead of improvising.</p>
+<h3>Agents — "do X autonomously"</h3>
+<p>An agent is a self-contained worker that completes one job end-to-end without
+needing step-by-step instructions from you. Example: <code>wiki-ingest</code> (claude-
+obsidian) takes a raw source file and independently decides how to split it
+into 8-15 linked wiki pages, choosing titles, links, and placement itself.</p>
+<h3>Sub-Agents — "split X into parallel pieces"</h3>
+<p>For large or multi-part work, an agent can spawn several sub-agents that each
+handle one slice of the job simultaneously. Example: ECC's <code>/ecc:multi-plan</code>
+spawns separate planning sub-agents for backend, frontend, and database work
+at the same time instead of sequentially.</p>
+<h3>How They Chain Together (real example)</h3>
+<p>Prompt: <em>"add auth to the login page"</em></p>
+<pre><code>Skills applied:      gsd-planning-skill, ui-ux-pro-max design-intelligence,
+                      ponytail-minimal-solution
+Agents launched:      gsd-planner (phases the work)
+                      ui-design-agent (finds the pattern)
+                      executor (writes the code)
+                      verifier (ECC — reviews before done)
+Sub-agents used:      only if the feature is large enough to parallelize
+                      (e.g., backend + frontend split)
+</code></pre>
+<hr />
+<hr />
+<h2 id="sec-hooks">Hooks: The Automation Layer</h2>
+<p>Hooks are the only genuinely deterministic (code, not judgment) part of
+SuperStack. They live in <code>~/.claude/hooks/hooks.json</code> and run automatically —
+Claude doesn't decide whether to run them, the Claude Code runtime does.</p>
+<pre><code class="language-json">SessionStart  → runs when you open a project in Claude Code
+                cats .vault/hot.md and .vault/index.md into context
+                (this is the &quot;silent memory injection&quot; from Step 1)
+
+Stop          → runs when a session/turn ends
+                trims .vault/hot.md down to the last ~50 lines
+                (keeps the memory file small and fast to read)
+</code></pre>
+<p><strong>Why so few hooks:</strong> hooks are best for simple, always-true actions (load
+this file, trim that file). Anything requiring judgment (which skill to use,
+whether to preview) belongs in the router (CLAUDE.md), not a hook — that's a
+deliberate design boundary, not an oversight.</p>
+<hr />
+<hr />
+<h2 id="sec-intent">Intent Routing Table (Full)</h2>
+<p>This is the actual table Claude follows at Step 3, verbatim from the router:</p>
+<table>
+<thead>
+<tr>
+<th>Your Intent</th>
+<th>Tool Chain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>New feature</td>
+<td>graphify query → planner (see rule below) → [uipro search if UI] → <code>/execute-plan</code> → <code>/ecc:code-review</code></td>
+</tr>
+<tr>
+<td>Bug fix</td>
+<td>graphify query → <code>/gsd-plan-bugfix</code> → fix (ponytail ultra) → <code>/ecc:quality-gate</code></td>
+</tr>
+<tr>
+<td>Debug/build error</td>
+<td>graphify query → <code>/ecc:build-fix</code> → <code>/ecc:checkpoint</code></td>
+</tr>
+<tr>
+<td>Refactor/cleanup</td>
+<td><code>/ponytail-audit</code> → <code>/ecc:refactor-clean</code> → <code>/ecc:test-coverage</code></td>
+</tr>
+<tr>
+<td>Write tests</td>
+<td>graphify query → ECC tdd-workflow skill → <code>/ecc:test-coverage</code></td>
+</tr>
+<tr>
+<td>Security check</td>
+<td><code>/ecc:security-scan</code> → security-review skill</td>
+</tr>
+<tr>
+<td>UI/design work</td>
+<td><code>uipro search "&lt;pattern&gt;"</code> → build → [<code>od plugin apply</code> if open-design installed]</td>
+</tr>
+<tr>
+<td>Research a topic</td>
+<td><code>/autoresearch &lt;topic&gt;</code> → results filed into <code>.vault/</code></td>
+</tr>
+<tr>
+<td>"What do we know about X"</td>
+<td>vault + graphify only — silent, cited answer</td>
+</tr>
+<tr>
+<td>"Remember this" / save</td>
+<td>vault ingest — silent</td>
+</tr>
+<tr>
+<td>Ship/release</td>
+<td><code>/gsd-ready-to-ship</code> → <code>/ecc:quality-gate</code> → <code>graphify diff</code> → <code>/save</code></td>
+</tr>
+<tr>
+<td>Understand the codebase</td>
+<td><code>graphify .</code> or <code>graphify query</code> → summarize</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Planner selection rule</strong> (used whenever intent = "plan"):
+- Multi-phase, large, or risky → <strong>GSD Core</strong> (<code>/gsd-plan-feature</code>)
+- Small and well-understood → <strong>ECC</strong> (<code>/ecc:plan</code>)
+- Requirements still unclear → <strong>Superpowers</strong> (<code>/brainstorm</code>)
+Claude states which one it picked and why, in one line.</p>
+<hr /></div>
+  </section>
+
+  <!-- USER GUIDE -->
+  <section class="doc-section" id="user-guide">
+    <div class="section-head">
+      <div class="section-eyebrow">04 · Getting started</div>
+      <h2>User Guide</h2>
+      <p>From zero to your first SuperStack project, in plain language.</p>
+    </div>
+    <div class="md-content"><h1>SuperStack — Simple User Guide</h1>
+<p>A plain-language guide to installing and using SuperStack. No jargon, no
+complicated diagrams — just what to do, in order.</p>
+<hr />
+<h2>What Is This, In One Sentence</h2>
+<p>SuperStack makes Claude Code smarter by connecting 10 helpful tools together,
+so you just talk normally and the right tools kick in by themselves.</p>
+<hr />
+<h2>Before You Install — What You Need</h2>
+<p>Check these are installed on your computer:</p>
+<ul>
+<li><strong>Git</strong> — for downloading things</li>
+<li><strong>Node.js</strong> (version 20 or higher) — Claude Code needs this anyway</li>
+<li><strong>Claude Code</strong> — you should already have this</li>
+</ul>
+<p>If you're not sure, don't worry — the installer checks for you and tells you
+what's missing.</p>
+<hr />
+<h2>Step 1: Install SuperStack (one time only)</h2>
+<h3>On Mac or Linux</h3>
+<p>Open your terminal and paste this:</p>
+<pre><code class="language-bash">curl -fsSL https://raw.githubusercontent.com/shantosaha/claude_superstack/main/install.sh | bash
+</code></pre>
+<h3>On Windows</h3>
+<p>Open PowerShell and paste this:</p>
+<pre><code class="language-powershell">irm https://raw.githubusercontent.com/shantosaha/claude_superstack/main/install.ps1 | iex
+</code></pre>
+<p><strong>What happens:</strong> it downloads the 10 tools, sets everything up, and takes
+about 5 minutes. You'll see checkmarks (✅) as each tool installs. If
+something can't install automatically, it tells you the exact command to
+run yourself — nothing fails silently.</p>
+<p><strong>You only do this once per computer.</strong></p>
+<h3>Prefer to clone the repo yourself first?</h3>
+<p>Any of these work the same way:</p>
+<pre><code class="language-bash"># HTTPS
+git clone https://github.com/shantosaha/claude_superstack.git
+
+# SSH
+git clone git@github.com:shantosaha/claude_superstack.git
+
+# GitHub CLI
+gh repo clone shantosaha/claude_superstack
+</code></pre>
+<p>Then run: <code>cd claude_superstack &amp;&amp; bash install.sh</code> (or <code>install.ps1</code> on
+Windows).</p>
+<hr />
+<h2>Step 2: Create Your First Project</h2>
+<pre><code class="language-bash">superstack init my-project
+</code></pre>
+<p>Replace <code>my-project</code> with whatever you want to call it. This creates a new
+folder with everything set up — memory, code understanding, and rules — ready
+to use.</p>
+<p><strong>Already have a project you want to add this to instead?</strong></p>
+<pre><code class="language-bash">cd my-existing-project
+superstack migrate .
+</code></pre>
+<p>The dot (<code>.</code>) means "this current folder."</p>
+<hr />
+<h2>Step 3: Open Claude Code and Just Talk</h2>
+<p>That's it. Open your project in Claude Code and type normally, like you're
+talking to a helpful coworker. No special syntax needed.</p>
+<hr />
+<h2>Real Example #1: Building a Feature</h2>
+<p><strong>You type:</strong></p>
+<blockquote>
+<p>add auth to the login page</p>
+</blockquote>
+<p><strong>Claude replies:</strong></p>
+<blockquote>
+<p>→ Plan: /gsd-plan-feature (structure the work)
+→ Design: search for an auth form pattern
+→ Build: implement it
+→ Review: check code quality
+~4 files affected. Proceed?</p>
+</blockquote>
+<p><strong>You type:</strong></p>
+<blockquote>
+<p>yes</p>
+</blockquote>
+<p>Claude builds it, using the right tools automatically. You didn't have to
+know which tool does what — SuperStack figured it out.</p>
+<hr />
+<h2>Real Example #2: The Messy, Real-Life Prompt</h2>
+<p>You don't have to write perfect instructions. Real prompts are often vague,
+and that's fine.</p>
+<p><strong>You type:</strong></p>
+<blockquote>
+<p>I don't know what happened, it was working before but now it's broken</p>
+</blockquote>
+<p><strong>What Claude does:</strong>
+1. Checks its memory of your project first (silently, free, instant)
+2. Looks at what changed recently in your code
+3. If it's still unsure, asks you ONE clarifying question (not twenty)
+4. Shows a quick preview of how it plans to investigate
+5. Fixes it</p>
+<p>You don't need to explain "please use the debugging skill" — Claude
+recognizes this as a bug-hunting request on its own.</p>
+<hr />
+<h2>Real Example #3: Multiple Requests in One Prompt</h2>
+<p><strong>You type:</strong></p>
+<blockquote>
+<p>can you fix the broken button, also clean up this messy file, and write a couple tests</p>
+</blockquote>
+<p><strong>What Claude does:</strong>
+Splits this into three separate tasks, shows you all three in one preview,
+and does them in order:</p>
+<blockquote>
+<p>→ Fix: repair the broken button
+→ Cleanup: simplify the messy file
+→ Tests: write tests for it
+Proceed?</p>
+</blockquote>
+<hr />
+<h2>Real Example #4: Just Asking a Question</h2>
+<p><strong>You type:</strong></p>
+<blockquote>
+<p>what do we know about the payment system?</p>
+</blockquote>
+<p><strong>What Claude does:</strong>
+Reads your project's memory (instantly, no preview needed — this never
+costs anything) and answers directly, citing what it found in your notes.</p>
+<hr />
+<h2>The Preview — Why You See It, and How to Skip It</h2>
+<p>Before doing most things, Claude shows you a one-line summary of what it's
+about to do and asks "Proceed?" This is so you're never surprised.</p>
+<p><strong>Want to skip it for something small?</strong> Add <code>/skip</code> to your prompt:</p>
+<blockquote>
+<p>fix this typo /skip</p>
+</blockquote>
+<p>Claude just does it, no confirmation needed.</p>
+<p><strong>Important:</strong> for anything big or risky — deleting files, touching more
+than 10 files at once, or big codebase-wide changes — Claude will ALWAYS
+show you the preview, even if you type <code>/skip</code>. This is on purpose, to keep
+you safe from accidents.</p>
+<hr />
+<h2>Commands You Can Type Inside Claude Code</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What It Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/skip</code></td>
+<td>Skip the preview for this one message</td>
+</tr>
+<tr>
+<td><code>/ponytail lite</code></td>
+<td>Make Claude write more exploratory, less minimal code</td>
+</tr>
+<tr>
+<td><code>/ponytail full</code></td>
+<td>Balanced code style (this is the default)</td>
+</tr>
+<tr>
+<td><code>/ponytail ultra</code></td>
+<td>Maximum minimal, shortest-possible code</td>
+</tr>
+<tr>
+<td><code>/ponytail auto</code></td>
+<td>Let Claude pick the level automatically again</td>
+</tr>
+<tr>
+<td><code>/superstack-status</code></td>
+<td>Show what's currently active and healthy</td>
+</tr>
+<tr>
+<td><code>/save</code></td>
+<td>Save this conversation into your project's memory</td>
+</tr>
+<tr>
+<td><code>/save my-notes</code></td>
+<td>Save it with a specific name</td>
+</tr>
+</tbody>
+</table>
+<p>You don't have to use these often — the system usually figures things out on
+its own. They're there for when you want to take control.</p>
+<hr />
+<h2>Commands You Type in Your Terminal (Not Inside Claude Code)</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What It Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>superstack init &lt;name&gt;</code></td>
+<td>Create a brand new project</td>
+</tr>
+<tr>
+<td><code>superstack migrate &lt;path&gt;</code></td>
+<td>Add SuperStack to a project you already have</td>
+</tr>
+<tr>
+<td><code>superstack doctor</code></td>
+<td>Check that everything is healthy</td>
+</tr>
+<tr>
+<td><code>superstack update</code></td>
+<td>Get the latest version of all 10 tools</td>
+</tr>
+<tr>
+<td><code>superstack uninstall</code></td>
+<td>Remove SuperStack</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Keeping Things Updated</h2>
+<p>Every once in a while (say, once a month), run:</p>
+<pre><code class="language-bash">superstack update
+</code></pre>
+<p>This grabs the newest version of every tool in the stack. Takes a couple
+minutes. Your projects and their memory are never touched — only the tools
+themselves get updated.</p>
+<hr />
+<h2>Checking If Everything Is Working</h2>
+<p>If something feels off, run:</p>
+<pre><code class="language-bash">superstack doctor
+</code></pre>
+<p>It checks each of the 10 tools and tells you what's healthy (✅) and what
+needs attention (⚠️), with the exact fix to run.</p>
+<hr />
+<h2>Your Project's Memory — What It Looks Like</h2>
+<p>Every project you set up gets a <code>.vault</code> folder — think of it as a personal
+notebook for that project. You never have to touch it directly, but if
+you're curious:</p>
+<ul>
+<li>Open the <code>.vault</code> folder in the free <strong>Obsidian</strong> app to see your notes
+  visually, with everything linked together</li>
+<li>Open <code>.graphify/graph.html</code> in your web browser to see a visual map of how
+  your code connects</li>
+</ul>
+<p>You don't need to manage these files by hand — Claude reads and updates them
+for you automatically.</p>
+<hr />
+<h2>Frequently Asked "Wait, What About...?"</h2>
+<p><strong>Q: Can I still use the original commands from each of the 10 tools directly?</strong>
+Yes. Nothing is hidden or blocked. If you know a specific command like
+<code>/ecc:security-scan</code>, you can type it any time. SuperStack just also picks
+the common ones automatically so you don't have to remember them.</p>
+<p><strong>Q: What if Claude picks the wrong tool for my request?</strong>
+Just tell it — "actually, use GSD for this instead" or "skip the design
+search." Claude adjusts immediately. You're always in control; the
+automatic routing is a starting suggestion, not a locked-in decision.</p>
+<p><strong>Q: Does this slow things down?</strong>
+Memory checks are instant and free (just reading files on your computer).
+The only extra step is the one-line preview before bigger actions, which
+you can skip for small stuff with <code>/skip</code>.</p>
+<p><strong>Q: Is my project data sent anywhere?</strong>
+Your project's memory (<code>.vault</code>, <code>.graphify</code>) lives on your own computer.
+Nothing about your local memory files is uploaded anywhere by SuperStack
+itself.</p>
+<hr />
+<h2>Quick Start Recap (Copy-Paste Cheat Sheet)</h2>
+<pre><code class="language-bash"># Install once
+curl -fsSL https://raw.githubusercontent.com/shantosaha/claude_superstack/main/install.sh | bash
+
+# New project
+superstack init my-project
+
+# Existing project
+cd my-existing-project &amp;&amp; superstack migrate .
+
+# Check health anytime
+superstack doctor
+
+# Update everything monthly
+superstack update
+</code></pre>
+<p>Then just open Claude Code and talk normally. That's the whole system.</p></div>
+  </section>
+
+  <!-- COMMAND REFERENCE -->
+  <section class="doc-section" id="commands">
+    <div class="section-head">
+      <div class="section-eyebrow">05 · Every command</div>
+      <h2>Command Reference</h2>
+      <p>All 113+ commands across SuperStack and the 10 repos, filterable.</p>
+    </div>
+    <div class="cmd-filter">
+      <input id="cmdSearch" type="text" placeholder="Filter commands… (e.g. security, plan, graphify)" autocomplete="off">
+      <div class="cmd-count" id="cmdCount"></div>
+    </div>
+    <div class="md-content" id="cmdTables"><h2>SuperStack CLI (run in your terminal)</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>superstack install</code></td>
+<td>Install/verify all 10 repos plus the global router and hooks</td>
+</tr>
+<tr>
+<td><code>superstack install --with-design</code></td>
+<td>Same as above, and also installs open-design</td>
+</tr>
+<tr>
+<td><code>superstack init &lt;name&gt;</code></td>
+<td>Create a brand new SuperStack-enabled project</td>
+</tr>
+<tr>
+<td><code>superstack migrate &lt;path&gt;</code></td>
+<td>Add SuperStack (vault, graph, config) to an existing project</td>
+</tr>
+<tr>
+<td><code>superstack doctor</code></td>
+<td>Health-check every part of the stack and suggest fixes</td>
+</tr>
+<tr>
+<td><code>superstack update</code></td>
+<td>Pull the latest version of all 10 repos and the router itself</td>
+</tr>
+<tr>
+<td><code>superstack uninstall</code></td>
+<td>Remove SuperStack's global files (leaves individual plugins installed)</td>
+</tr>
+<tr>
+<td><code>superstack version</code></td>
+<td>Print the installed SuperStack version</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> You cloned a two-year-old project and want it wired in.</p>
+<pre><code class="language-bash">cd old-project
+superstack migrate .
+</code></pre>
+<p>This builds a fresh code graph and vault for it without touching your code.</p>
+<hr />
+<h2>SuperStack In-Chat Commands (type inside Claude Code)</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/skip</code></td>
+<td>Skip the preview for this one prompt (not for heavy/destructive tasks)</td>
+</tr>
+<tr>
+<td><code>/ponytail lite</code></td>
+<td>Set code style to more exploratory, less minimal</td>
+</tr>
+<tr>
+<td><code>/ponytail full</code></td>
+<td>Set code style to balanced (default)</td>
+</tr>
+<tr>
+<td><code>/ponytail ultra</code></td>
+<td>Set code style to maximum minimalism</td>
+</tr>
+<tr>
+<td><code>/ponytail auto</code></td>
+<td>Let Claude choose the level automatically again</td>
+</tr>
+<tr>
+<td><code>/superstack-status</code></td>
+<td>Show which tools are active and whether memory/graph are healthy</td>
+</tr>
+<tr>
+<td><code>/save</code></td>
+<td>Save the current conversation into the project's vault</td>
+</tr>
+<tr>
+<td><code>/save &lt;name&gt;</code></td>
+<td>Save the conversation under a specific name</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> You're deep in a large cleanup touching 15 files and don't
+want to be asked every time — but since it's over the 10-file threshold, the
+preview will show anyway even with <code>/skip</code>. That's intentional: <code>/skip</code> only
+waives the ask for small, normal tasks.</p>
+<hr />
+<h2>1. ECC — Quality, Security &amp; Optimization</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/ecc:plan</code></td>
+<td>Plan a feature or task implementation</td>
+</tr>
+<tr>
+<td><code>/ecc:code-review</code></td>
+<td>Review code for quality and security issues</td>
+</tr>
+<tr>
+<td><code>/ecc:build-fix</code></td>
+<td>Diagnose and fix build/compile errors</td>
+</tr>
+<tr>
+<td><code>/ecc:refactor-clean</code></td>
+<td>Remove dead code and simplify structure</td>
+</tr>
+<tr>
+<td><code>/ecc:quality-gate</code></td>
+<td>Run the full verification checklist before shipping</td>
+</tr>
+<tr>
+<td><code>/ecc:learn</code></td>
+<td>Extract reusable patterns from this session</td>
+</tr>
+<tr>
+<td><code>/ecc:checkpoint</code></td>
+<td>Save the current verification state</td>
+</tr>
+<tr>
+<td><code>/ecc:security-scan</code></td>
+<td>Run a security vulnerability scan</td>
+</tr>
+<tr>
+<td><code>/ecc:update-docs</code></td>
+<td>Regenerate documentation from current code</td>
+</tr>
+<tr>
+<td><code>/ecc:update-codemaps</code></td>
+<td>Refresh the internal map of the codebase</td>
+</tr>
+<tr>
+<td><code>/ecc:test-coverage</code></td>
+<td>Analyze how much of the code is tested</td>
+</tr>
+<tr>
+<td><code>/ecc:go-review</code></td>
+<td>Review Go code specifically</td>
+</tr>
+<tr>
+<td><code>/ecc:go-test</code></td>
+<td>Run Go-specific test-driven workflow</td>
+</tr>
+<tr>
+<td><code>/ecc:go-build</code></td>
+<td>Fix Go build errors</td>
+</tr>
+<tr>
+<td><code>/ecc:python-review</code></td>
+<td>Review Python code against PEP 8</td>
+</tr>
+<tr>
+<td><code>/ecc:setup-pm</code></td>
+<td>Auto-detect and configure the package manager</td>
+</tr>
+<tr>
+<td><code>/ecc:skill-create</code></td>
+<td>Generate a new skill from git history patterns</td>
+</tr>
+<tr>
+<td><code>/ecc:instinct-status</code></td>
+<td>View instincts (learned patterns) so far</td>
+</tr>
+<tr>
+<td><code>/ecc:instinct-import</code></td>
+<td>Import instincts from a file</td>
+</tr>
+<tr>
+<td><code>/ecc:instinct-export</code></td>
+<td>Export your learned instincts</td>
+</tr>
+<tr>
+<td><code>/ecc:evolve</code></td>
+<td>Cluster instincts into a reusable skill</td>
+</tr>
+<tr>
+<td><code>/ecc:prune</code></td>
+<td>Delete expired/unused pending instincts</td>
+</tr>
+<tr>
+<td><code>/ecc:pm2</code></td>
+<td>Manage background services via PM2</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-plan</code></td>
+<td>Split a big task into parallel planning sub-agents</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-execute</code></td>
+<td>Run a multi-agent orchestrated workflow</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-backend</code></td>
+<td>Coordinate multiple backend services at once</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-frontend</code></td>
+<td>Coordinate multiple frontend services at once</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-workflow</code></td>
+<td>General-purpose multi-service orchestration</td>
+</tr>
+<tr>
+<td><code>/ecc:sessions</code></td>
+<td>View past session history</td>
+</tr>
+<tr>
+<td><code>/ecc:harness-audit</code></td>
+<td>Audit the reliability of your current agent setup</td>
+</tr>
+<tr>
+<td><code>/ecc:loop-start</code></td>
+<td>Start a controlled autonomous work loop</td>
+</tr>
+<tr>
+<td><code>/ecc:loop-status</code></td>
+<td>Check the status of an active loop</td>
+</tr>
+<tr>
+<td><code>/ecc:model-route</code></td>
+<td>Route sub-tasks to different models by complexity</td>
+</tr>
+<tr>
+<td><code>/ecc:learn-eval</code></td>
+<td>Extract and score patterns from a session</td>
+</tr>
+<tr>
+<td><code>/ecc:promote</code></td>
+<td>Promote a project-specific instinct to global</td>
+</tr>
+<tr>
+<td><code>/ecc:projects</code></td>
+<td>List all tracked projects and their instinct stats</td>
+</tr>
+<tr>
+<td><code>npx ecc consult "&lt;topic&gt;"</code></td>
+<td>Ask ECC's knowledge base a direct question</td>
+</tr>
+<tr>
+<td><code>npx ecc install --profile &lt;name&gt;</code></td>
+<td>Install ECC with a specific feature profile</td>
+</tr>
+<tr>
+<td><code>ecc work-items sync-github</code></td>
+<td>Sync tracked work items with a GitHub repo</td>
+</tr>
+<tr>
+<td><code>node scripts/ecc.js doctor</code></td>
+<td>Check ECC's own installation health</td>
+</tr>
+<tr>
+<td><code>npx ecc-agentshield scan</code></td>
+<td>Scan for security vulnerabilities</td>
+</tr>
+<tr>
+<td><code>npx ecc-agentshield scan --fix</code></td>
+<td>Scan and automatically fix what it can</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example (complex one):</strong> You inherited a legacy Go microservice with no
+tests and unclear ownership.</p>
+<pre><code>/ecc:go-review
+</code></pre>
+<p>Then:</p>
+<pre><code>/ecc:go-test
+</code></pre>
+<p>This reviews the Go-specific patterns first, then sets up a proper
+test-driven workflow instead of you guessing where to start.</p>
+<hr />
+<h2>2. Superpowers — Development Workflow</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/brainstorm</code></td>
+<td>Explore ideas freely, without writing any code yet</td>
+</tr>
+<tr>
+<td><code>/write-plan</code></td>
+<td>Turn an idea into a concrete, detailed implementation plan</td>
+</tr>
+<tr>
+<td><code>/execute-plan</code></td>
+<td>Carry out a written plan, running independent parts in parallel</td>
+</tr>
+<tr>
+<td><code>/think-pair-share</code></td>
+<td>Work through a decision collaboratively, weighing trade-offs</td>
+</tr>
+<tr>
+<td><code>/preserving-productive-tensions</code></td>
+<td>Keep multiple valid solutions open instead of collapsing too early</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> You're not sure if you want a monolith or microservices.</p>
+<pre><code>/brainstorm &quot;monolith vs microservices for this project&quot;
+</code></pre>
+<p>Claude explores both directions without committing code, so you can decide
+with a clear picture instead of Claude jumping straight to implementation.</p>
+<hr />
+<h2>3. GSD Core — Long-Feature Context Management</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/gsd-new-project</code></td>
+<td>Initialize a brand-new project under GSD's structure</td>
+</tr>
+<tr>
+<td><code>/gsd-onboard</code></td>
+<td>Bring an existing codebase into GSD's phase system</td>
+</tr>
+<tr>
+<td><code>/gsd-sync</code></td>
+<td>Sync GSD's tracked state with the current project</td>
+</tr>
+<tr>
+<td><code>/gsd-status</code></td>
+<td>Check what phase the current feature is in</td>
+</tr>
+<tr>
+<td><code>/gsd-plan-feature</code></td>
+<td>Plan a new feature across discuss/plan/execute/test/ship phases</td>
+</tr>
+<tr>
+<td><code>/gsd-plan-bugfix</code></td>
+<td>Plan a targeted bug fix the same way</td>
+</tr>
+<tr>
+<td><code>/gsd-estimate</code></td>
+<td>Estimate effort for planned work</td>
+</tr>
+<tr>
+<td><code>/gsd-review</code></td>
+<td>Review completed work against the plan</td>
+</tr>
+<tr>
+<td><code>/gsd-ready-to-ship</code></td>
+<td>Run final checks before releasing</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> A feature is big enough to span several days and multiple
+files, and you're worried Claude will "forget" earlier decisions halfway
+through.</p>
+<pre><code>/gsd-plan-feature &quot;add multi-tenant support&quot;
+</code></pre>
+<p>GSD breaks it into phases with fresh context at each step, so nothing gets
+lost partway through a long build.</p>
+<hr />
+<h2>4. Ponytail — Code Minimalism</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/ponytail lite</code></td>
+<td>Minimal-intensity suggestions — leaves room to explore</td>
+</tr>
+<tr>
+<td><code>/ponytail full</code></td>
+<td>Default balance of minimalism and flexibility</td>
+</tr>
+<tr>
+<td><code>/ponytail ultra</code></td>
+<td>Forces the shortest, most minimal solution possible</td>
+</tr>
+<tr>
+<td><code>/ponytail off</code></td>
+<td>Turn off lazy-dev mode entirely</td>
+</tr>
+<tr>
+<td><code>/ponytail-review</code></td>
+<td>Review existing code against minimalism principles</td>
+</tr>
+<tr>
+<td><code>/ponytail-audit</code></td>
+<td>Audit the whole codebase for over-engineering</td>
+</tr>
+<tr>
+<td><code>/ponytail-debt</code></td>
+<td>Track shortcuts taken and technical debt incurred</td>
+</tr>
+<tr>
+<td><code>/ponytail-gain</code></td>
+<td>See how much simpler the code became with ponytail active</td>
+</tr>
+<tr>
+<td><code>/ponytail-help</code></td>
+<td>Show a quick reference of ponytail commands</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> You suspect your codebase has grown bloated over time.</p>
+<pre><code>/ponytail-audit
+</code></pre>
+<p>It flags over-engineered spots — unnecessary abstractions, unused
+flexibility — so you know exactly what to simplify first.</p>
+<hr />
+<h2>5. Graphify — Code Knowledge Graph</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/graphify</code></td>
+<td>Map the entire current project into a knowledge graph</td>
+</tr>
+<tr>
+<td><code>graphify install</code></td>
+<td>Register graphify with your AI assistant</td>
+</tr>
+<tr>
+<td><code>graphify query "&lt;question&gt;"</code></td>
+<td>Ask a question about how the codebase is structured</td>
+</tr>
+<tr>
+<td><code>graphify community-detect</code></td>
+<td>Automatically find and cluster related subsystems</td>
+</tr>
+<tr>
+<td><code>graphify verify &lt;change&gt;</code></td>
+<td>Formally verify that a code change is safe (enterprise)</td>
+</tr>
+<tr>
+<td><code>graphify diff</code></td>
+<td>Show what changed in the graph since last run</td>
+</tr>
+<tr>
+<td><code>graphify export &lt;format&gt;</code></td>
+<td>Export the graph as JSON, GraphML, HTML, CSV, or Markdown</td>
+</tr>
+<tr>
+<td><code>graphify label</code></td>
+<td>Auto-name the detected clusters/communities</td>
+</tr>
+<tr>
+<td><code>graphify doctor</code></td>
+<td>Check graphify's own installation health</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> You just joined a project with 80,000 lines of unfamiliar
+code.</p>
+<pre><code>graphify .
+</code></pre>
+<p>Then open <code>graph.html</code> in your browser — you get a visual map showing which
+files are central "hubs" and how everything connects, instead of reading
+every file one by one.</p>
+<hr />
+<h2>6. claude-obsidian — Second Brain / Vault</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/wiki</code></td>
+<td>Check vault setup, or continue where you left off</td>
+</tr>
+<tr>
+<td><code>ingest [file]</code></td>
+<td>Read a source file and file it into 8-15 linked wiki pages</td>
+</tr>
+<tr>
+<td><code>ingest all of these</code></td>
+<td>Batch-process several sources and cross-reference them</td>
+</tr>
+<tr>
+<td><code>what do you know about X?</code></td>
+<td>Get a cited answer synthesized from the vault</td>
+</tr>
+<tr>
+<td><code>/save</code></td>
+<td>File the current conversation as a wiki note</td>
+</tr>
+<tr>
+<td><code>/save [name]</code></td>
+<td>Save with a specific title</td>
+</tr>
+<tr>
+<td><code>/autoresearch [topic]</code></td>
+<td>Autonomously research a topic online and file the findings</td>
+</tr>
+<tr>
+<td><code>/canvas</code></td>
+<td>Open or create a visual canvas of notes/images/PDFs</td>
+</tr>
+<tr>
+<td><code>/think [problem]</code></td>
+<td>Apply a structured 10-principle thinking process to a problem</td>
+</tr>
+<tr>
+<td><code>lint the wiki</code></td>
+<td>Check the vault for orphaned notes, dead links, and gaps</td>
+</tr>
+<tr>
+<td><code>update hot cache</code></td>
+<td>Refresh the short-term memory summary file</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> You just finished a long design discussion in chat and want
+it kept for later.</p>
+<pre><code>/save &quot;auth architecture decision&quot;
+</code></pre>
+<p>It's now a permanent, searchable note — next time you ask "why did we choose
+JWT over sessions," Claude can answer from this saved page.</p>
+<hr />
+<h2>7. obsidian-skills — Vault File Literacy</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/plugin install obsidian@obsidian-skills</code></td>
+<td>Install the skill that teaches proper vault file handling</td>
+</tr>
+</tbody>
+</table>
+<p><em>(This repo has no commands of its own — it silently improves how correctly
+Claude reads and writes Markdown, Bases, and Canvas files inside your vault.)</em></p>
+<hr />
+<h2>8. andrej-karpathy-skills — Coding Discipline</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/plugin install andrej-karpathy-skills@multica-ai</code></td>
+<td>Install the always-on coding discipline guideline</td>
+</tr>
+</tbody>
+</table>
+<p><em>(No further commands — once installed, it silently applies on every prompt:
+no silent assumptions, no over-engineering, goal-driven execution.)</em></p>
+<hr />
+<h2>9. ui-ux-pro-max-skill — Design Intelligence</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uipro init --ai &lt;platform&gt;</code></td>
+<td>Install the design database skill for your AI platform</td>
+</tr>
+<tr>
+<td><code>uipro versions</code></td>
+<td>List available versions of the design skill</td>
+</tr>
+<tr>
+<td><code>uipro update</code></td>
+<td>Refresh the design database to the latest</td>
+</tr>
+<tr>
+<td><code>uipro uninstall</code></td>
+<td>Remove the design skill</td>
+</tr>
+<tr>
+<td><code>python3 search.py "&lt;query&gt;" --domain &lt;domain&gt;</code></td>
+<td>Search the design database directly</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> You need a color palette and font pairing for a finance
+dashboard, not just "something that looks nice."</p>
+<pre><code>uipro search &quot;finance dashboard&quot; --domain color-palettes
+</code></pre>
+<p>Returns specific, tested palette options suited to that exact product type,
+instead of a generic guess.</p>
+<hr />
+<h2>10. open-design — Design Artifact Generation</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>od plugin list</code></td>
+<td>List all installed design plugins</td>
+</tr>
+<tr>
+<td><code>od plugin search "&lt;query&gt;"</code></td>
+<td>Search available design plugins by keyword</td>
+</tr>
+<tr>
+<td><code>od plugin info &lt;plugin-id&gt;</code></td>
+<td>See what a plugin needs as input and what it outputs</td>
+</tr>
+<tr>
+<td><code>od plugin install &lt;plugin-id&gt;</code></td>
+<td>Install a plugin from the registry</td>
+</tr>
+<tr>
+<td><code>od plugin apply &lt;plugin-id&gt; --input key=value</code></td>
+<td>Run a plugin to generate an actual design artifact</td>
+</tr>
+<tr>
+<td><code>od plugin upgrade &lt;plugin-id&gt;</code></td>
+<td>Update an installed plugin</td>
+</tr>
+<tr>
+<td><code>od plugin uninstall &lt;plugin-id&gt;</code></td>
+<td>Remove an installed plugin</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real example:</strong> You need an actual slide deck file, not just design advice.</p>
+<pre><code>od plugin search &quot;pitch deck&quot;
+od plugin apply pitch-deck-generator --input topic=&quot;Q3 results&quot;
+</code></pre>
+<p>This produces a real, exportable <code>.pptx</code> file — not just a description of
+what the deck should look like.</p>
+<hr />
+<h2>Grand Total</h2>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SuperStack CLI</td>
+<td>8</td>
+</tr>
+<tr>
+<td>SuperStack in-chat</td>
+<td>8</td>
+</tr>
+<tr>
+<td>ECC</td>
+<td>40+</td>
+</tr>
+<tr>
+<td>Superpowers</td>
+<td>5</td>
+</tr>
+<tr>
+<td>GSD Core</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Ponytail</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Graphify</td>
+<td>9</td>
+</tr>
+<tr>
+<td>claude-obsidian</td>
+<td>11</td>
+</tr>
+<tr>
+<td>obsidian-skills</td>
+<td>1 (install only)</td>
+</tr>
+<tr>
+<td>andrej-karpathy-skills</td>
+<td>1 (install only)</td>
+</tr>
+<tr>
+<td>ui-ux-pro-max-skill</td>
+<td>5</td>
+</tr>
+<tr>
+<td>open-design</td>
+<td>7</td>
+</tr>
+<tr>
+<td><strong>TOTAL</strong></td>
+<td><strong>~113+ commands</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Reminder: SuperStack's router auto-triggers the most common ~30% of these
+for you based on what you type. Every command above still works if you type
+it directly, any time.</p></div>
+  </section>
+
+  <!-- 10-REPO DEEP REFERENCE -->
+  <section class="doc-section" id="repos">
+    <div class="section-head">
+      <div class="section-eyebrow">06 · Full per-repo breakdown</div>
+      <h2>10-Repo Deep Reference</h2>
+      <p>Skills, agents, hooks, env vars, install options — click any repo to expand.</p>
+    </div>
+    
+<details class="repo-accordion" id="repo-ecc-affaan-m-ecc">
+  <summary><span class="repo-name">ECC (affaan-m/ECC)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>1. ECC (affaan-m/ECC) - 231K+ Stars</h1>
+<h2>Agent Harness Performance Optimization System</h2>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash">/plugin marketplace add https://github.com/affaan-m/ECC
+/plugin install ecc@ecc
+npx ecc consult &quot;mlops training model deployment&quot; --target claude
+npx ecc install --profile minima
+npx ecc install --profile core
+npx ecc install --profile full
+./install.sh --profile full
+.\install.ps1 --profile full
+npx ecc-install --profile full
+</code></pre>
+<h3>Slash Commands (Maintained)</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/ecc:plan</code></td>
+<td>Feature implementation planning</td>
+</tr>
+<tr>
+<td><code>/ecc:code-review</code></td>
+<td>Code quality and security review</td>
+</tr>
+<tr>
+<td><code>/ecc:build-fix</code></td>
+<td>Fix build and compile errors</td>
+</tr>
+<tr>
+<td><code>/ecc:refactor-clean</code></td>
+<td>Remove dead code and simplify</td>
+</tr>
+<tr>
+<td><code>/ecc:quality-gate</code></td>
+<td>Run verification gate checks</td>
+</tr>
+<tr>
+<td><code>/ecc:learn</code></td>
+<td>Extract patterns from session</td>
+</tr>
+<tr>
+<td><code>/ecc:checkpoint</code></td>
+<td>Save verification state</td>
+</tr>
+<tr>
+<td><code>/ecc:security-scan</code></td>
+<td>Run AgentShield security auditor</td>
+</tr>
+<tr>
+<td><code>/ecc:update-docs</code></td>
+<td>Update documentation automatically</td>
+</tr>
+<tr>
+<td><code>/ecc:update-codemaps</code></td>
+<td>Update codebase maps</td>
+</tr>
+<tr>
+<td><code>/ecc:test-coverage</code></td>
+<td>Analyze test coverage</td>
+</tr>
+<tr>
+<td><code>/ecc:go-review</code></td>
+<td>Go code review</td>
+</tr>
+<tr>
+<td><code>/ecc:go-test</code></td>
+<td>Go TDD workflow</td>
+</tr>
+<tr>
+<td><code>/ecc:go-build</code></td>
+<td>Fix Go build errors</td>
+</tr>
+<tr>
+<td><code>/ecc:python-review</code></td>
+<td>Python code review (PEP 8)</td>
+</tr>
+<tr>
+<td><code>/ecc:setup-pm</code></td>
+<td>Configure package manager</td>
+</tr>
+<tr>
+<td><code>/ecc:skill-create</code></td>
+<td>Generate skills from git history</td>
+</tr>
+<tr>
+<td><code>/ecc:instinct-status</code></td>
+<td>View learned instincts</td>
+</tr>
+<tr>
+<td><code>/ecc:instinct-import</code></td>
+<td>Import instincts from file</td>
+</tr>
+<tr>
+<td><code>/ecc:instinct-export</code></td>
+<td>Export your instincts</td>
+</tr>
+<tr>
+<td><code>/ecc:evolve</code></td>
+<td>Cluster instincts into skills</td>
+</tr>
+<tr>
+<td><code>/ecc:prune</code></td>
+<td>Delete expired pending instincts</td>
+</tr>
+<tr>
+<td><code>/ecc:pm2</code></td>
+<td>PM2 service lifecycle management</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-plan</code></td>
+<td>Multi-agent task decomposition</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-execute</code></td>
+<td>Multi-agent orchestrated workflows</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-backend</code></td>
+<td>Backend multi-service orchestration</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-frontend</code></td>
+<td>Frontend multi-service orchestration</td>
+</tr>
+<tr>
+<td><code>/ecc:multi-workflow</code></td>
+<td>General multi-service workflows</td>
+</tr>
+<tr>
+<td><code>/ecc:sessions</code></td>
+<td>Session history management</td>
+</tr>
+<tr>
+<td><code>/ecc:harness-audit</code></td>
+<td>Audit harness reliability</td>
+</tr>
+<tr>
+<td><code>/ecc:loop-start</code></td>
+<td>Start controlled agentic loop</td>
+</tr>
+<tr>
+<td><code>/ecc:loop-status</code></td>
+<td>Inspect active loop status</td>
+</tr>
+<tr>
+<td><code>/ecc:model-route</code></td>
+<td>Route tasks to models by complexity</td>
+</tr>
+<tr>
+<td><code>/ecc:learn-eval</code></td>
+<td>Extract and evaluate patterns</td>
+</tr>
+<tr>
+<td><code>/ecc:promote</code></td>
+<td>Promote project instincts globally</td>
+</tr>
+<tr>
+<td><code>/ecc:projects</code></td>
+<td>List projects and instinct stats</td>
+</tr>
+</tbody>
+</table>
+<h3>Legacy Commands (Still Available - Backward Compatible)</h3>
+<pre><code>/plan              → now /ecc:plan
+/code-review       → now /ecc:code-review
+/build-fix         → now /ecc:build-fix
+/refactor-clean    → now /ecc:refactor-clean
+/quality-gate      → now /ecc:quality-gate
+/learn             → now /ecc:learn
+/checkpoint        → now /ecc:checkpoint
+/update-docs       → now /ecc:update-docs
+/test-coverage     → now /ecc:test-coverage
+/go-review         → now /ecc:go-review
+/go-test           → now /ecc:go-test
+/go-build          → now /ecc:go-build
+/python-review     → now /ecc:python-review
+/sessions          → now /ecc:sessions
+/skill-create      → now /ecc:skill-create
+/instinct-status   → now /ecc:instinct-status
+/instinct-import   → now /ecc:instinct-import
+/instinct-export   → now /ecc:instinct-export
+/evolve            → now /ecc:evolve
+/prune             → now /ecc:prune
+/pm2               → now /ecc:pm2
+/multi-plan        → now /ecc:multi-plan
+/multi-execute     → now /ecc:multi-execute
+/multi-backend     → now /ecc:multi-backend
+/multi-frontend    → now /ecc:multi-frontend
+/multi-workflow    → now /ecc:multi-workflow
+/setup-pm          → now /ecc:setup-pm
+</code></pre>
+<h3>CLI Commands</h3>
+<pre><code class="language-bash">npx ecc consult &quot;topic&quot; --target claude
+npx ecc install --profile minima
+npx ecc install --profile full --target claude
+npx ecc status --markdown --write status.md
+npx ecc status --exit-code
+ecc work-items upsert ...
+ecc work-items sync-github --repo owner/repo
+node scripts/ecc.js list-installed
+node scripts/ecc.js doctor
+node scripts/ecc.js repair
+node scripts/ecc.js uninstall --dry-run
+node scripts/uninstall.js --dry-run
+node scripts/uninstall.js
+node scripts/setup-package-manager.js --global pnpm
+node scripts/setup-package-manager.js --project bun
+node scripts/setup-package-manager.js --detect
+npx ecc-agentshield scan
+npx ecc-agentshield scan --fix
+npx ecc-agentshield scan --opus --stream
+npx ecc-agentshield init
+npm run dashboard
+python3 ./ecc_dashboard.py
+</code></pre>
+<h3>Environment Variables for Configuration</h3>
+<pre><code class="language-bash">export ECC_HOOK_PROFILE=standard              # Hook strictness: minimal|standard|strict
+export ECC_DISABLED_HOOKS=&quot;hook1,hook2&quot;       # Comma-separated hook IDs to disable
+export ECC_SESSION_START_MAX_CHARS=8000       # SessionStart context limit (default: 8000)
+export ECC_SESSION_START_CONTEXT=off          # Disable SessionStart context entirely
+export ECC_SESSION_RETENTION_DAYS=30          # Session retention window (0/off/false = keep all)
+export ECC_MAX_INJECTED_INSTINCTS=6           # Max instincts injected at session start
+export ECC_INSTINCT_CONFIDENCE_THRESHOLD=0.7  # Min confidence for instinct injection (0-1)
+export ECC_CONTEXT_MONITOR_COST_WARNINGS=off  # Suppress API-rate cost estimates
+export ECC_AGENT_DATA_HOME=&quot;$HOME/.cursor/ecc&quot; # Multi-harness memory isolation
+export ECC_DISABLED_MCPS=&quot;chrome-devtools&quot;    # MCPs to skip during install/sync
+export CLAUDE_PACKAGE_MANAGER=pnpm            # Preferred package manager
+</code></pre>
+<h3>Hooks (Trigger-Based Automations)</h3>
+<pre><code>PreToolUse         → Before tool execution
+PostToolUse        → After tool execution
+Stop               → On session stop
+SessionStart       → On session start
+SessionEnd         → On session end
+Pre-compact        → Pre-compaction state saving
+Suggest-compact    → Strategic compaction suggestions
+Evaluate-session   → Extract patterns from sessions
+</code></pre>
+<h3>Agents (67 Total - Specialized Subagents)</h3>
+<pre><code>planner.md
+architect.md
+tdd-guide.md
+code-reviewer.md
+security-reviewer.md
+build-error-resolver.md
+e2e-runner.md
+refactor-cleaner.md
+doc-updater.md
+docs-lookup.md
+chief-of-staff.md
+loop-operator.md
+harness-optimizer.md
+cpp-reviewer.md, cpp-build-resolver.md
+fsharp-reviewer.md
+go-reviewer.md, go-build-resolver.md
+python-reviewer.md
+database-reviewer.md
+typescript-reviewer.md
+java-reviewer.md, java-build-resolver.md
+kotlin-reviewer.md, kotlin-build-resolver.md
+harmonyos-app-resolver.md
+rust-reviewer.md, rust-build-resolver.md
+pytorch-build-resolver.md
+mle-reviewer.md
+... and 40+ more domain-specific agents
+</code></pre>
+<h3>Skills (278 Total Categories)</h3>
+<pre><code>coding-standards/
+backend-patterns/
+frontend-patterns/
+frontend-slides/
+article-writing/
+content-engine/
+market-research/
+investor-materials/
+investor-outreach/
+tdd-workflow/
+security-review/
+eval-harness/
+verification-loop/
+continuous-learning/
+continuous-learning-v2/
+iterative-retrieval/
+strategic-compact/
+videodb/
+golang-patterns/, golang-testing/
+cpp-coding-standards/, cpp-testing/
+django-patterns/, django-security/, django-tdd/, django-verification/
+laravel-patterns/, laravel-security/, laravel-tdd/, laravel-verification/
+python-patterns/, python-testing/
+springboot-patterns/, springboot-security/, springboot-tdd/, springboot-verification/
+quarkus-patterns/, quarkus-security/, quarkus-tdd/, quarkus-verification/
+configure-ecc/
+security-scan/
+database-migrations/
+api-design/
+deployment-patterns/
+docker-patterns/
+e2e-testing/
+... and 200+ more skills
+</code></pre>
+<h3>Rules (34 Total - Always-Follow Guidelines)</h3>
+<pre><code>rules/common/
+  ├─ coding-style.md
+  ├─ git-workflow.md
+  ├─ testing.md
+  ├─ performance.md
+  ├─ patterns.md
+  ├─ hooks.md
+  ├─ agents.md
+  └─ security.md
+
+rules/typescript/
+rules/python/
+rules/golang/
+rules/swift/
+rules/php/
+rules/arkts/
+</code></pre>
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-superpowers-obra-superpowers">
+  <summary><span class="repo-name">Superpowers (obra/superpowers)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>2. Superpowers (obra/superpowers) - 6.3K Stars</h1>
+<h2>Agentic Skills Framework &amp; Software Development Methodology</h2>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash">/plugin marketplace add obra/superpowers-marketplace
+/plugin install superpowers@superpowers-marketplace
+/plugins install https://github.com/obra/superpowers
+
+# For Codex
+copilot plugin marketplace add obra/superpowers-marketplace
+copilot plugin install superpowers@superpowers-marketplace
+
+# For Kimi Code
+/plugins install https://github.com/obra/superpowers
+# Then: /plugins → Marketplace &gt; Superpowers
+
+# For OpenCode
+pi install git:github.com/obra/superpowers
+
+# Manual/Development
+cd superpowers &amp;&amp; npm install
+</code></pre>
+<h3>Slash Commands (Built-in Workflows)</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/brainstorm</code></td>
+<td>Explore ideas without implementation</td>
+</tr>
+<tr>
+<td><code>/write-plan</code></td>
+<td>Create detailed implementation plan</td>
+</tr>
+<tr>
+<td><code>/execute-plan</code></td>
+<td>Execute planned work with parallel tasks</td>
+</tr>
+<tr>
+<td><code>/think-pair-share</code></td>
+<td>Collaborative decision making</td>
+</tr>
+<tr>
+<td><code>/preserving-productive-tensions</code></td>
+<td>Keep multiple valid approaches</td>
+</tr>
+</tbody>
+</table>
+<h3>Marketplace Commands</h3>
+<pre><code class="language-bash">/plugin marketplace add obra/superpowers-marketplace
+/plugin marketplace add obra/superpowers-developing-for-claude-code
+/plugin marketplace add obra/superpowers-lab
+</code></pre>
+<h3>Skills (20+ Battle-Tested)</h3>
+<pre><code>brainstorm-skill          → Problem-space exploration
+write-plan-skill          → Implementation phasing
+execution-skill           → Execution methodology
+code-review-skill         → Code quality review
+testing-skill             → Test-first development
+debugging-skill           → Systematic debugging
+collaboration-skill       → Team coordination
+meta-skill                → Process reflection
+search-first-skill        → Research before coding
+tdd-skill                 → Test-driven development
+security-skill            → Security verification
+documentation-skill       → Doc generation
+performance-skill         → Performance analysis
+accessibility-skill       → Accessibility review
+refactoring-skill         → Code refactoring
+decision-logging-skill    → Decision capture
+estimation-skill          → Effort estimation
+... and 2+ more
+</code></pre>
+<h3>Available Plugins/Extensions</h3>
+<pre><code>elements-of-style         → Writing clarity and conciseness (Strunk Jr. rules)
+claude-code-development   → Claude Code plugin development
+private-journal-mcp       → Semantic search journaling
+... and community extensions
+</code></pre>
+<h3>Lab (Experimental Features)</h3>
+<pre><code class="language-bash">/plugin install https://github.com/obra/superpowers-lab
+</code></pre>
+<p>Features:
+- Finding duplicate functions (semantic deduplication)
+- On-demand MCP server execution
+- Experimental skills under active development</p>
+<h3>Community Skills Repository</h3>
+<pre><code class="language-bash"># Skills auto-cloned to ~/.config/superpowers/skills/
+# Users can fork and submit PRs with improvements
+# Skills auto-update on session start
+</code></pre>
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-gsd-core-open-gsd-gsd-core">
+  <summary><span class="repo-name">GSD Core (open-gsd/gsd-core)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>3. GSD Core (open-gsd/gsd-core) - 6.7K Stars</h1>
+<h2>Context-Engineering &amp; Spec-Driven Development Framework</h2>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash">npx @opengsd/gsd-core@latest --install
+npx @opengsd/gsd-core@latest --claude --global
+npx @opengsd/gsd-core@latest --opencode --global
+npx @opengsd/gsd-core@latest --codex --global
+npx @opengsd/gsd-core@latest --cursor --global
+npx @opengsd/gsd-core@latest --gemini --global
+npx @opengsd/gsd-core@latest --copilot --global
+</code></pre>
+<h3>Main Commands</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/gsd-new-project</code></td>
+<td>Initialize greenfield project</td>
+</tr>
+<tr>
+<td><code>/gsd-onboard</code></td>
+<td>Onboard existing codebase</td>
+</tr>
+<tr>
+<td><code>/gsd-sync</code></td>
+<td>Sync GSD with current state</td>
+</tr>
+<tr>
+<td><code>/gsd-status</code></td>
+<td>Check project status</td>
+</tr>
+</tbody>
+</table>
+<h3>Phase Loop Commands (5-Step Methodology)</h3>
+<pre><code>Discuss  → Capture implementation decisions
+Plan     → Research, decompose, verify
+Execute  → Run plans in parallel waves
+Test     → Verify and validate
+Ship     → Deploy and monitor
+</code></pre>
+<h3>Workflow Commands</h3>
+<pre><code class="language-bash">/gsd-plan-feature &quot;Add new API endpoint&quot;
+/gsd-plan-bugfix &quot;Fix authentication issue&quot;
+/gsd-estimate &quot;effort in hours&quot;
+/gsd-review &quot;code changes&quot;
+/gsd-ready-to-ship &quot;final checks&quot;
+</code></pre>
+<h3>Generated Project Artifacts</h3>
+<pre><code>.planning/
+├── codebase/
+│   ├── STACK.md          (Tech stack detected)
+│   ├── CONVENTIONS.md    (Code patterns observed)
+│   └── CONCERNS.md       (Technical debt &amp; fragile areas)
+│
+├── phases/
+│   ├── 01-01-PLAN.md     (Current phase plan)
+│   ├── 01-02-EXECUTE.md  (Execution checklist)
+│   └── ... (history of all phases)
+│
+└── decisions/
+    ├── ADR-001.md        (Architecture decisions)
+    └── ... (decision log)
+</code></pre>
+<h3>Build/Test Commands</h3>
+<pre><code class="language-bash">pnpm install --frozen-lockfile
+pnpm run build
+pnpm run test
+pnpm run verify:fast        # CI fast-gates locally
+pnpm run verify:pr          # Fast loop: build + typecheck + unit tests
+pnpm run verify:merge       # Full CI blocking parity before PR review
+</code></pre>
+<h3>Subagent Orchestration</h3>
+<pre><code>Fresh-context subagents for:
+├─ Research phase
+├─ Planning phase  
+├─ Execution waves (parallel)
+├─ Verification phase
+└─ Shipping phase
+</code></pre>
+<h3>Environment Configuration</h3>
+<pre><code class="language-bash"># Runtime selection during install
+--claude              # Claude Code
+--opencode           # OpenCode/Antigravity
+--codex             # OpenAI Codex CLI/App
+--cursor            # Cursor IDE
+--gemini            # Google Gemini CLI
+--copilot           # GitHub Copilot (VS Code)
+--global            # System-wide installation
+--local             # Project-specific installation
+</code></pre>
+<h3>Agents Available in GSD</h3>
+<pre><code>gsd-planner         → Planning and decomposition
+gsd-executor        → Execution and implementation
+gsd-reviewer        → Code and design review
+gsd-researcher      → Research and context gathering
+gsd-shipper         → Deployment and monitoring
+</code></pre>
+<h3>CLI Utilities</h3>
+<pre><code class="language-bash">npx @opengsd/gsd-core --version
+npx @opengsd/gsd-core --help
+npx @opengsd/gsd-core doctor          # Check GSD health
+npx @opengsd/gsd-core repair          # Auto-repair issues
+npx @opengsd/gsd-core reset           # Reset to defaults
+npx @opengsd/gsd-core export-state    # Export project state
+npx @opengsd/gsd-core import-state    # Import project state
+</code></pre>
+<hr />
+<h2>Quick Comparison Table</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>ECC</th>
+<th>Superpowers</th>
+<th>GSD Core</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Total Commands</strong></td>
+<td>94+</td>
+<td>5+ slash</td>
+<td>5+ slash</td>
+</tr>
+<tr>
+<td><strong>Total Agents</strong></td>
+<td>67</td>
+<td>~10</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>Total Skills</strong></td>
+<td>278+</td>
+<td>20+</td>
+<td>Integrated</td>
+</tr>
+<tr>
+<td><strong>Hook Types</strong></td>
+<td>8</td>
+<td>Custom</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><strong>Installation Methods</strong></td>
+<td>3+</td>
+<td>2</td>
+<td>7</td>
+</tr>
+<tr>
+<td><strong>Cross-Platform</strong></td>
+<td>Yes (7 harnesses)</td>
+<td>Yes (5 harnesses)</td>
+<td>Yes (6 harnesses)</td>
+</tr>
+<tr>
+<td><strong>Primary Focus</strong></td>
+<td>Agent optimization</td>
+<td>Workflow methodology</td>
+<td>Context management</td>
+</tr>
+<tr>
+<td><strong>Best For</strong></td>
+<td>Large codebases</td>
+<td>Team collaboration</td>
+<td>Long-running tasks</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>How to Use These Commands</h2>
+<h3>ECC Workflow</h3>
+<pre><code>1. /ecc:plan &quot;feature description&quot;
+2. tdd-workflow skill
+3. /ecc:code-review
+4. /ecc:security-scan
+5. /ecc:quality-gate
+6. Deploy
+</code></pre>
+<h3>Superpowers Workflow</h3>
+<pre><code>1. /brainstorm &quot;problem space&quot;
+2. /write-plan &quot;implementation&quot;
+3. /execute-plan &quot;build it&quot;
+4. Team review
+5. Ship
+</code></pre>
+<h3>GSD Core Workflow</h3>
+<pre><code>1. /gsd-new-project or /gsd-onboard
+2. /gsd-plan-feature
+3. Parallel execution waves
+4. Verification phase
+5. /gsd-ready-to-ship
+</code></pre>
+<hr />
+<h2>Installation Checklist</h2>
+<h3>For ECC</h3>
+<ul>
+<li>[ ] <code>/plugin marketplace add https://github.com/affaan-m/ECC</code></li>
+<li>[ ] <code>/plugin install ecc@ecc</code></li>
+<li>[ ] Copy rules to <code>~/.claude/rules/ecc/</code></li>
+<li>[ ] Set environment variables</li>
+<li>[ ] Verify with <code>/plugin list ecc@ecc</code></li>
+</ul>
+<h3>For Superpowers</h3>
+<ul>
+<li>[ ] <code>/plugin marketplace add obra/superpowers-marketplace</code></li>
+<li>[ ] <code>/plugin install superpowers@superpowers-marketplace</code></li>
+<li>[ ] Run <code>/brainstorm</code> or <code>/write-plan</code> to test</li>
+<li>[ ] Explore available skills</li>
+</ul>
+<h3>For GSD Core</h3>
+<ul>
+<li>[ ] <code>npx @opengsd/gsd-core@latest --install</code></li>
+<li>[ ] Choose your runtime (Claude Code, OpenCode, etc.)</li>
+<li>[ ] Run <code>/gsd-new-project</code> or <code>/gsd-onboard</code></li>
+<li>[ ] Follow the guided workflow</li>
+</ul>
+<hr />
+<p><strong>All commands tested and verified as of July 2026.</strong>
+<strong>Bookmark this reference for daily use!</strong></p>
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-ponytail-dietrichgebert-ponytail">
+  <summary><span class="repo-name">Ponytail (DietrichGebert/ponytail)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>4. Ponytail (DietrichGebert/ponytail) - 85K+ Stars</h1>
+<h2>AI Agent "Lazy Senior Dev" Optimization &amp; Minimal Code Generation</h2>
+<p><strong>Description:</strong> Makes your AI agent think like the laziest senior developer in the room using YAGNI principle (You Ain't Gonna Need It). Forces minimal solutions, standard library first, no unnecessary abstractions. Philosophy: the best code is the code you never wrote.</p>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash"># Claude Code
+/plugin marketplace add https://github.com/DietrichGebert/ponytail
+/plugin install ponytail@ponytail
+
+# OpenCode (reads AGENTS.md automatically)
+/hooks review and trust lifecycle hooks
+# Then run new thread
+
+# Codex
+codex plugin marketplace add DietrichGebert/ponytail
+codex plugin add ponytail@ponytail
+codex plugin install ponytail@ponytail
+
+# Copilot (VS Code)
+copilot plugin marketplace add DietrichGebert/ponytail
+copilot plugin install ponytail@ponytail
+
+# Copilot CLI
+/plugin marketplace add DietrichGebert/ponytail
+/plugin install ponytail@ponytail
+
+# Swival Package Manager
+swival skills add --global https://github.com/DietrichGebert/ponytail
+swival skills add ponytail
+swival skills add --global ponytail
+
+# Manual Setup
+copy AGENTS.md to project root
+run codewhale from checkout
+</code></pre>
+<h3>Slash Commands</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/ponytail</code></td>
+<td>Activate lazy mode (lite/full/ultra)</td>
+</tr>
+<tr>
+<td><code>/ponytail:ponytail lite</code></td>
+<td>Lite level laziness (minimal)</td>
+</tr>
+<tr>
+<td><code>/ponytail:ponytail full</code></td>
+<td>Full level laziness (default)</td>
+</tr>
+<tr>
+<td><code>/ponytail:ponytail ultra</code></td>
+<td>Ultra level laziness (most minimal)</td>
+</tr>
+<tr>
+<td><code>/ponytail:ponytail off</code></td>
+<td>Disable lazy mode</td>
+</tr>
+<tr>
+<td><code>/ponytail-review</code></td>
+<td>Review code with lazy principles</td>
+</tr>
+<tr>
+<td><code>/ponytail-audit</code></td>
+<td>Audit codebase for over-engineering</td>
+</tr>
+<tr>
+<td><code>/ponytail-debt</code></td>
+<td>Track technical debt &amp; shortcuts</td>
+</tr>
+<tr>
+<td><code>/ponytail-gain</code></td>
+<td>Measure gains from lazy approach</td>
+</tr>
+<tr>
+<td><code>/ponytail-help</code></td>
+<td>Show ponytail help &amp; quick reference</td>
+</tr>
+</tbody>
+</table>
+<h3>Activation Triggers (Auto-Activate)</h3>
+<pre><code>&quot;ponytail&quot;
+&quot;be lazy&quot;
+&quot;lazy mode&quot;
+&quot;simplest solution&quot;
+&quot;minimal solution&quot;
+&quot;yagni&quot;
+&quot;do less&quot;
+&quot;shortest path&quot;
+&quot;over-engineered&quot;
+&quot;bloated&quot;
+&quot;boilerplate&quot;
+&quot;unnecessary dependencies&quot;
+</code></pre>
+<h3>Core Skills (12 Total)</h3>
+<pre><code>ponytail-mode-selector       → Choose lite/full/ultra
+ponytail-yagni              → You Ain't Gonna Need It principle
+ponytail-stdlib-first       → Use standard library before custom
+ponytail-minimal-solution   → Shortest, simplest, most minimal code
+ponytail-debt-ledger        → Track shortcuts and deferrals
+ponytail-dependency-review  → Question every dependency
+ponytail-lazy-refactor      → Refactor minimally
+ponytail-lazy-architecture  → Design simply
+ponytail-lazy-review        → Review for over-engineering
+ponytail-quick-reference    → Commands and modes cheat sheet
+ponytail-intensity-levels   → lite (minimal) → full (default) → ultra
+ponytail-senior-dev-mode    → Channel 30-year-veteran developer
+</code></pre>
+<h3>Intensity Levels</h3>
+<pre><code>lite   → Minimal suggestions, leave most to you
+full   → Default balance of suggestions and automation
+ultra  → Maximum lazy solution forcing
+off    → Completely disabled
+</code></pre>
+<h3>Rules/Guidelines Injected Per Turn</h3>
+<pre><code>YAGNI (You Ain't Gonna Need It)
+└─ Question whether task needs to exist at all
+
+Standard Library First
+└─ Use stdlib before custom code
+└─ Use native platform features before dependencies
+
+Minimal/Shortest Path
+└─ One line before fifty
+└─ Remove boilerplate relentlessly
+└─ No unrequested abstractions
+
+Simplicity
+└─ KISS (Keep It Simple, Stupid)
+└─ Linear code over clever code
+└─ Explicit over implicit (but minimal)
+</code></pre>
+<h3>Use Cases (Coding Only)</h3>
+<pre><code>✓ Writing new code
+✓ Refactoring existing code
+✓ Fixing bugs
+✓ Code review
+✓ Library/dependency selection
+✓ Architecture design
+✗ Non-coding requests (knowledge, prose, translation, summaries, recipes)
+</code></pre>
+<h3>Project Configuration</h3>
+<pre><code>AGENTS.md (project root)
+└─ Auto-loaded by OpenCode
+└─ Defines rules for this project
+└─ Zero setup required if copied from repo
+</code></pre>
+<h3>Benchmarks &amp; Comparison</h3>
+<pre><code>Real model output (Claude Haiku 4.5):
+- Without Ponytail: Verbose, over-engineered solutions
+- With Ponytail: Minimal, pragmatic solutions
+
+Generate benchmarks yourself:
+npx promptfoo@latest eval -c benchmarks/promptfooconfig.yaml
+</code></pre>
+<h3>Environment Variables</h3>
+<pre><code class="language-bash">export PONYTAIL_MODE=full              # Default mode
+export PONYTAIL_INTENSITY=ultra        # Or: lite, full, ultra
+export PONYTAIL_LEVEL=standard         # Hook strictness
+export PONYTAIL_DISABLED=false
+</code></pre>
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-graphify-graphify-labs-graphify">
+  <summary><span class="repo-name">Graphify (Graphify-Labs/graphify)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>5. Graphify (Graphify-Labs/graphify) - 90K+ Stars</h1>
+<h2>AI-Powered Code Knowledge Graph &amp; Dependency Visualization</h2>
+<p><strong>Description:</strong> Turn any folder of code, SQL schemas, R scripts, shell scripts, docs, papers, images, or videos into a queryable knowledge graph. Maps entire projects into persistent knowledge graphs showing how code actually fits together. Supports Claude Code, Codex, OpenCode, Cursor, Gemini CLI, and more.</p>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash"># Recommended: UV/Pipx
+uv tool install graphify &amp;&amp; graphify install
+pipx install graphify &amp;&amp; graphify install
+
+# Then register skill
+/graphify .
+
+# Project-Scoped Installation
+graphify install --project
+graphify install --project --platform codex
+
+# Platform-Specific Installs
+graphify claude install
+graphify claude install --project
+graphify codex install
+graphify codex install --project
+graphify opencode install
+graphify cursor install
+graphify gemini install
+graphify copilot install
+
+# PowerShell Note
+# Use: graphify . (not /graphify . - slash is path separator)
+</code></pre>
+<h3>Main Slash Commands</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/graphify</code></td>
+<td>Map entire project into knowledge graph</td>
+</tr>
+<tr>
+<td><code>/graphify query &lt;query&gt;</code></td>
+<td>Query the knowledge graph</td>
+</tr>
+<tr>
+<td><code>/graphify community-detect</code></td>
+<td>Find community clusters/subsystems</td>
+</tr>
+<tr>
+<td><code>/graphify verify</code></td>
+<td>Verify a change is safe</td>
+</tr>
+<tr>
+<td><code>/graphify diff</code></td>
+<td>Show what changed in the graph</td>
+</tr>
+<tr>
+<td><code>/graphify export</code></td>
+<td>Export graph in various formats</td>
+</tr>
+<tr>
+<td><code>/graphify label</code></td>
+<td>Auto-name communities</td>
+</tr>
+<tr>
+<td><code>/graphify help</code></td>
+<td>Show graphify help</td>
+</tr>
+</tbody>
+</table>
+<h3>CLI Commands</h3>
+<pre><code class="language-bash"># Core Operations
+graphify install                    # Register skill with assistant
+graphify install --project          # Project-scoped install
+graphify run                        # Run extraction on current directory
+graphify run path/to/codebase       # Extract specific path
+graphify query &quot;semantic search&quot;    # Query the graph
+graphify community-detect           # Cluster subsystems
+graphify label                      # Auto-name communities
+graphify label --no-label           # Keep default naming (Community N)
+
+# Export &amp; Analysis
+graphify export json                # Export as JSON
+graphify export graphml             # Export as GraphML
+graphify export csv                 # Export as CSV
+graphify export html                # Generate interactive HTML
+graphify export markdown            # Export as Markdown report
+graphify export git                 # Export git history
+
+# Verification (Enterprise)
+graphify verify path/to/change      # Formal verification of changes
+graphify diff                       # Show graph differences
+graphify blame                      # Attribution analysis
+
+# Configuration
+graphify config show                # Show current config
+graphify config set &lt;key&gt; &lt;value&gt;   # Set configuration
+graphify doctor                     # Health check
+graphify repair                     # Auto-repair issues
+
+# Advanced
+graphify extract                    # Manual extraction
+graphify cache clear                # Clear extraction cache
+graphify debug                      # Debug mode
+</code></pre>
+<h3>Supported Input Types</h3>
+<pre><code>Code
+├─ Python
+├─ TypeScript/JavaScript
+├─ Java
+├─ C++/C
+├─ Go
+├─ Rust
+├─ Ruby
+├─ PHP
+├─ Swift
+├─ Kotlin
+└─ ... and more
+
+Structured Data
+├─ SQL schemas
+├─ YAML configs
+├─ JSON configs
+└─ GraphQL schemas
+
+Documents
+├─ Markdown docs
+├─ Plain text
+├─ Papers/PDFs
+└─ API documentation
+
+Media
+├─ Images (vision-capable extraction)
+├─ Videos (transcript extraction)
+└─ Audio (transcript extraction)
+
+Version Control
+├─ Git history
+├─ Commit messages
+└─ Branch structures
+</code></pre>
+<h3>Generated Output Artifacts</h3>
+<pre><code>graphify-out/
+├── graph.html
+│   └─ Interactive web visualization
+│   └─ Click nodes, filter, search
+│   └─ Zoom and pan
+│
+├── GRAPH_REPORT.md
+│   └─ Highlights and key insights
+│   └─ Community breakdown
+│   └─ Top nodes (god nodes)
+│
+├── graph.json
+│   └─ Machine-readable format
+│
+├── graph.graphml
+│   └─ GraphML format (Neo4j compatible)
+│
+├── WIKI.md
+│   └─ Auto-generated wiki
+│
+└── query_results.json
+    └─ Search results
+</code></pre>
+<h3>Graph Analysis Features</h3>
+<pre><code>Extraction Pipeline
+├─ Parse source code/docs
+├─ Extract symbols, references, patterns
+├─ Build edges (calls, imports, dependencies)
+└─ Store in knowledge graph
+
+Community Detection (Leiden Algorithm)
+├─ Cluster related components
+├─ Auto-label communities
+├─ Identify subsystems
+└─ Show interdependencies
+
+Confidence Scoring
+├─ Tag edges as EXTRACTED or INFERRED
+├─ Show uncertainty levels
+├─ Explain reasoning
+└─ Let user decide trust
+
+God Nodes Detection
+├─ Find central hubs
+├─ Identify single points of failure
+├─ Surface coupling risks
+└─ Guide refactoring
+</code></pre>
+<h3>Edge Attribution</h3>
+<pre><code>EXTRACTED  → Explicitly in source code
+INFERRED   → Resolved by graphify analysis
+
+Example:
+- EXTRACTED: Direct function call
+- INFERRED: Polymorphic dispatch that graphify resolved
+</code></pre>
+<h3>Platform-Specific Install Paths</h3>
+<pre><code>Claude Code
+└─ ~/.claude/skills/graphify/SKILL.md
+└─ ~/.claude/skills/graphify/references/
+
+Codex
+└─ ~/.config/codex/skills/graphify/SKILL.md
+
+OpenCode
+└─ ~/.opencode/skills/graphify/SKILL.md
+
+Cursor
+└─ ~/.cursor/skills/graphify/SKILL.md
+
+Gemini CLI
+└─ ~/.gemini/skills/graphify/SKILL.md
+</code></pre>
+<h3>Configuration Options</h3>
+<pre><code class="language-bash">export GRAPHIFY_BACKEND=openai          # LLM backend for labeling
+export GRAPHIFY_MODEL=gpt-4o            # Model for community naming
+export GRAPHIFY_MAX_CONTEXT=200000      # Max context for analysis
+export GRAPHIFY_CACHE_DIR=.graphify     # Cache location
+export GRAPHIFY_LANGUAGES=python,ts     # Restrict to languages
+export GRAPHIFY_DEPTH=3                 # Traversal depth
+export GRAPHIFY_MIN_CONFIDENCE=0.7      # Min confidence threshold
+export GRAPHIFY_DOCKER_BACKEND=true     # Use Docker for extraction
+export GRAPHIFY_SQLITE_BACKEND=true     # Use SQLite persistence
+</code></pre>
+<h3>Advanced Features</h3>
+<pre><code>Optional Integrations
+├─ Docker MCP Toolkit (containerized extraction)
+├─ SQLite backend (persistent graphs)
+├─ Custom language extractors
+├─ API integrations
+└─ Git hooks automation
+
+Verification Layer (Enterprise)
+├─ Formal verification of code changes
+├─ Input/output proof generation
+├─ Regression detection
+├─ Safety guarantees
+└─ Runnable test cases
+
+Persistent Memory
+├─ Session memory layer
+├─ Incremental updates
+├─ Historical graph snapshots
+└─ Change tracking
+</code></pre>
+<h3>Associated Tools</h3>
+<pre><code>Penpax
+└─ Always-on memory layer built on Graphify
+└─ Extends to: meetings, browser history, emails, files, code
+└─ Auto-updating working graph of your entire life
+
+The Memory Layer (Book)
+└─ Complete guide to building persistent memory for AI agents
+└─ Architecture of knowledge graphs
+└─ Graphify internals deep dive
+</code></pre>
+<h3>Performance Benchmarks</h3>
+<pre><code>Extraction Speed
+├─ Average: 1000 LOC per second
+├─ Python: 800 LOC/s
+├─ TypeScript: 1200 LOC/s
+
+Graph Size
+├─ 50K LOC → ~5000 nodes/edges
+├─ 500K LOC → ~50K nodes/edges
+├─ 5M LOC → ~500K nodes/edges
+
+Query Speed
+├─ Simple query: &lt;100ms
+├─ Complex traversal: &lt;500ms
+└─ Full graph analysis: 1-5s
+</code></pre>
+<h3>Verification Examples (Enterprise)</h3>
+<pre><code>Before:  Code change + guess it's safe
+After:   Graphify proves: &quot;This change is safe&quot; OR
+         &quot;Breaking input: {example} fails with {error}&quot;
+
+Verified Properties
+├─ Type safety
+├─ Control flow
+├─ Data dependencies
+├─ Side effects
+└─ Invariants
+</code></pre>
+<hr />
+<hr />
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-claude-obsidian-agricidaniel-claude-obsi">
+  <summary><span class="repo-name">claude-obsidian (AgriciDaniel/claude-obsidian)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>1. claude-obsidian (AgriciDaniel/claude-obsidian) - 9.4K+ Stars</h1>
+<h2>Self-Organizing AI Second Brain for Obsidian + Claude Code</h2>
+<p><strong>Description:</strong> A running AI notetaker that builds and maintains a persistent, compounding wiki vault. Drop any source and Claude reads, links, and files it into a connected knowledge graph of plain Markdown. Based on Andrej Karpathy's LLM Wiki pattern. 15 Claude Code skills with multi-agent support.</p>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash"># Option 1: Clone as vault (recommended, 2-min setup)
+git clone https://github.com/AgriciDaniel/claude-obsidian
+cd claude-obsidian
+bash bin/setup-vault.sh
+# Then open in Obsidian, open Claude Code, type /wiki
+
+# Option 2: Install as Claude Code plugin
+claude plugin marketplace add AgriciDaniel/claude-obsidian
+claude plugin install claude-obsidian@agricidaniel-claude-obsidian
+claude plugin list  # verify install
+
+# Option 3: Add to existing vault
+# Copy WIKI.md into vault root, then paste setup prompt into Claude
+</code></pre>
+<h3>Core Commands</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/wiki</code></td>
+<td>Setup check, scaffold, or continue where you left off</td>
+</tr>
+<tr>
+<td><code>ingest [file]</code></td>
+<td>Read source, create 8-15 wiki pages, update index/log</td>
+</tr>
+<tr>
+<td><code>ingest all of these</code></td>
+<td>Batch process multiple sources, then cross-reference</td>
+</tr>
+<tr>
+<td><code>what do you know about X?</code></td>
+<td>Read index, drill into pages, synthesize cited answer</td>
+</tr>
+<tr>
+<td><code>/save</code></td>
+<td>File current conversation as a wiki note</td>
+</tr>
+<tr>
+<td><code>/save [name]</code></td>
+<td>Save with specific title (skips naming question)</td>
+</tr>
+<tr>
+<td><code>/autoresearch [topic]</code></td>
+<td>Autonomous research loop: search, fetch, synthesize, file</td>
+</tr>
+<tr>
+<td><code>/canvas</code></td>
+<td>Open/create visual canvas, list zones and nodes</td>
+</tr>
+<tr>
+<td><code>/think [problem]</code></td>
+<td>Apply 10-principle thinking loop to a problem</td>
+</tr>
+<tr>
+<td><code>lint the wiki</code></td>
+<td>Health check: orphans, dead links, gaps, suggestions</td>
+</tr>
+<tr>
+<td><code>update hot cache</code></td>
+<td>Refresh hot.md with latest context summary</td>
+</tr>
+</tbody>
+</table>
+<h3>Canvas Sub-Commands</h3>
+<pre><code class="language-bash">/canvas                       # open or create the canvas
+/canvas add image &lt;path&gt;      # add image with auto-layout
+/canvas add pdf &lt;path&gt;        # render PDF as preview node
+/canvas add note &lt;wiki-page&gt;  # pin wiki page as linked card
+/canvas zone &lt;name&gt;           # add labeled zone
+/canvas from banana           # capture recent AI-generated images
+</code></pre>
+<h3>15 Claude Code Skills</h3>
+<pre><code>wiki/                # orchestrator + references
+wiki-ingest/         # source ingestion
+wiki-query/          # answer questions from vault
+wiki-lint/           # vault health check
+wiki-cli/            # Obsidian CLI transport (v1.7+)
+wiki-retrieve/       # hybrid retrieval (v1.7+, opt-in)
+wiki-mode/           # methodology modes router (v1.8+)
+wiki-fold/           # log rollup (DragonScale opt-in)
+save/                # /save: file conversations to wiki
+autoresearch/        # autonomous research loop
+canvas/              # visual layer (images, PDFs, notes)
+defuddle/            # web extraction wrapper
+obsidian-bases/      # Bases schema reference
+obsidian-markdown/   # OFM syntax reference
+think/               # 10-principle thinking framework
+</code></pre>
+<h3>3 Specialized Agents</h3>
+<pre><code>verifier.md        → Pre-commit audit agent (six-cut review)
+wiki-ingest.md      → Parallel batch ingestion agent
+wiki-lint.md        → Health check agent
+</code></pre>
+<h3>Methodology Modes (v1.8+)</h3>
+<pre><code>Generic (default)    → No opinion, v1.7 behavior
+LYT                  → Linking Your Thinking (notes link, MOCs navigate)
+PARA                 → Projects/Areas/Resources/Archives (Tiago Forte)
+Zettelkasten         → Atomic notes, unique IDs, no folders
+</code></pre>
+<h3>MCP Setup Commands</h3>
+<pre><code class="language-bash"># Option A: REST API based
+claude mcp add-json obsidian-vault '{...OBSIDIAN_API_KEY...}' --scope user
+
+# Option B: Filesystem based (no plugin needed)
+claude mcp add-json obsidian-vault '{
+  &quot;type&quot;: &quot;stdio&quot;,
+  &quot;command&quot;: &quot;npx&quot;,
+  &quot;args&quot;: [&quot;-y&quot;, &quot;@bitbonsai/mcpvault@latest&quot;, &quot;/path/to/vault&quot;]
+}' --scope user
+</code></pre>
+<h3>Uninstall</h3>
+<pre><code class="language-bash">claude plugin uninstall claude-obsidian@agricidaniel-claude-obsidian
+claude plugin marketplace remove AgriciDaniel/claude-obsidian
+make clean-test-state  # clear runtime state without uninstalling
+</code></pre>
+<h3>Related Companion Tools</h3>
+<pre><code>claude-canvas    → Visual canvas orchestration (12 templates, 6 layouts)
+claude-ads       → Multi-platform paid ads audit (250+ checks)
+claude-seo       → Technical SEO + GEO audit suite
+</code></pre>
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-obsidian-skills-kepano-obsidian-skills">
+  <summary><span class="repo-name">obsidian-skills (kepano/obsidian-skills)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>2. obsidian-skills (kepano/obsidian-skills) - 42K+ Stars</h1>
+<h2>Agent Skills for Obsidian CLI &amp; Open Formats</h2>
+<p><strong>Description:</strong> Agent Skills for use with Obsidian, built by Obsidian's creator (Steph Ango / kepano). Teaches agents to use the Obsidian CLI and open formats including Markdown, Bases, and JSON Canvas. Follows the Agent Skills specification for compatibility with Claude Code, Codex, and OpenCode.</p>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash"># Claude Code Marketplace
+/plugin marketplace add kepano/obsidian-skills
+/plugin install obsidian@obsidian-skills
+
+# npx skills (SSH)
+npx skills add git@github.com:kepano/obsidian-skills.git
+
+# npx skills (HTTPS)
+npx skills add https://github.com/kepano/obsidian-skills
+
+# Manual - Claude Code
+# Copy repo contents into /.claude folder at vault root
+
+# Manual - Codex
+# Copy skills/ directory into ~/.codex/skills
+
+# Manual - OpenCode
+git clone https://github.com/kepano/obsidian-skills.git ~/.opencode/skills/obsidian-skills
+# Note: clone full repo, not just inner skills/ folder
+</code></pre>
+<h3>Core Focus Areas (Skills Cover)</h3>
+<pre><code>Obsidian CLI operations
+Markdown (Obsidian Flavored Markdown / OFM) syntax
+Bases (native database views, v1.9.10+)
+JSON Canvas 1.0 spec
+Vault navigation and structure
+Note linking conventions
+</code></pre>
+<h3>Compatibility</h3>
+<pre><code>Claude Code   → Native skill support
+Codex         → Agent Skills spec compatible
+OpenCode      → Auto-discovers SKILL.md files
+</code></pre>
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-andrej-karpathy-skills-multica-ai-andrej">
+  <summary><span class="repo-name">andrej-karpathy-skills (multica-ai/andrej-karpathy-skills)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>3. andrej-karpathy-skills (multica-ai/andrej-karpathy-skills) - 192K+ Stars</h1>
+<h2>Karpathy-Derived Claude Code Behavior Guidelines</h2>
+<p><strong>Description:</strong> A single CLAUDE.md file (now a full Claude Code plugin) that improves Claude Code behavior, derived from Andrej Karpathy's documented observations on LLM coding pitfalls. Addresses silent assumptions, over-engineering, and lack of goal-driven execution. Originally forrestchang/andrej-karpathy-skills (redirects to multica-ai now).</p>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash"># Direct CLAUDE.md append (original method)
+echo &quot;&quot; &gt;&gt; CLAUDE.md
+curl https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md &gt;&gt; CLAUDE.md
+
+# Claude Code Plugin (current recommended method)
+/plugin marketplace add multica-ai/andrej-karpathy-skills
+/plugin install andrej-karpathy-skills@multica-ai
+
+# Cursor (via committed project rule)
+# Rule at .cursor/rules/karpathy-guidelines.mdc auto-applies
+# See CURSOR.md for setup in other projects
+</code></pre>
+<h3>The 4 Core Principles (Karpathy's Observations)</h3>
+<table>
+<thead>
+<tr>
+<th>Principle</th>
+<th>What It Fixes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Goal-Driven Execution</strong></td>
+<td>Transform imperative instructions into declarative success criteria with verification loops (not step-by-step micromanagement)</td>
+</tr>
+<tr>
+<td><strong>No Silent Assumptions</strong></td>
+<td>Models wrongly assume things on your behalf without checking; forces clarification-seeking</td>
+</tr>
+<tr>
+<td><strong>Anti-Overcomplication</strong></td>
+<td>Fixes tendency to bloat abstractions, build 1000-line solutions when 100 lines would do</td>
+</tr>
+<tr>
+<td><strong>Comment/Code Preservation</strong></td>
+<td>Stops models from changing/removing comments and code they don't fully understand</td>
+</tr>
+</tbody>
+</table>
+<h3>Skill Structure</h3>
+<pre><code>skills/karpathy-guidelines/SKILL.md   → Structured skill definition
+.claude-plugin/plugin.json            → Plugin manifest
+.claude-plugin/marketplace.json       → Marketplace distribution
+.cursor/rules/karpathy-guidelines.mdc → Cursor project rule
+CURSOR.md                             → Cursor setup guide
+EXAMPLES.md                           → Usage examples
+README.zh.md                          → Chinese translation
+</code></pre>
+<h3>Usage Pattern</h3>
+<pre><code class="language-markdown"># Merge with project-specific instructions in CLAUDE.md:
+
+## Project-Specific Guidelines
+- Use TypeScript strict mode
+- All API endpoints must have tests
+- Follow existing error handling patterns in src/utils/errors.ts
+
+# These guidelines bias the agent toward Karpathy's principles
+# while respecting your project's specific constraints
+</code></pre>
+<h3>Key Quote (Philosophy)</h3>
+<blockquote>
+<p>"LLMs are exceptionally good at looping until they meet specific goals... Don't tell it what to do, give it success criteria and watch it go."</p>
+</blockquote>
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-ui-ux-pro-max-skill-nextlevelbuilder-ui-">
+  <summary><span class="repo-name">ui-ux-pro-max-skill (nextlevelbuilder/ui-ux-pro-max-skill)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>4. ui-ux-pro-max-skill (nextlevelbuilder/ui-ux-pro-max-skill) - 107K+ Stars</h1>
+<h2>AI Design Intelligence for Professional UI/UX</h2>
+<p><strong>Description:</strong> AI-powered design intelligence toolkit providing searchable databases of UI styles, color palettes, font pairings, chart types, and UX guidelines. Works as a skill for Claude Code, Cursor, Windsurf, Copilot, and 18+ platforms.</p>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash"># Claude Code Marketplace (2-command install)
+/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill
+/plugin install ui-ux-pro-max@ui-ux-pro-max-skill
+
+# NPM CLI (Universal - works for all 18 platforms)
+npm install -g ui-ux-pro-max-cli
+uipro init --ai claude
+
+# Or without global install
+npx ui-ux-pro-max-cli init --ai {{platform}}
+
+# Platform-specific examples
+uipro init --ai claude --global      # Install to ~/.claude/skills/
+uipro init --ai cursor --global      # Install to ~/.cursor/skills/
+uipro init --offline                 # Compatibility flag, bundled templates
+</code></pre>
+<h3>CLI Commands</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uipro init --ai &lt;platform&gt;</code></td>
+<td>Install skill for specified platform</td>
+</tr>
+<tr>
+<td><code>uipro versions</code></td>
+<td>List available versions</td>
+</tr>
+<tr>
+<td><code>uipro update</code></td>
+<td>Refresh skill files from installed CLI package</td>
+</tr>
+<tr>
+<td><code>uipro uninstall</code></td>
+<td>Remove skill (auto-detect platform)</td>
+</tr>
+<tr>
+<td><code>uipro uninstall --ai claude</code></td>
+<td>Remove from specific platform</td>
+</tr>
+<tr>
+<td><code>uipro uninstall --global</code></td>
+<td>Remove from global install</td>
+</tr>
+</tbody>
+</table>
+<h3>Search Command (Core Functionality)</h3>
+<pre><code class="language-bash">python3 src/ui-ux-pro-max/scripts/search.py &quot;&lt;query&gt;&quot; --domain &lt;domain&gt; [-n &lt;max_results&gt;]
+# On Windows, use &quot;python&quot; instead of &quot;python3&quot;
+</code></pre>
+<h3>Design Database Coverage (v2.11.0)</h3>
+<pre><code>84 UI styles
+192 color palettes
+74 font pairings
+192 product types (with reasoning rules)
+99 UX guidelines
+104 icon entries
+16 GSAP motion presets
+25 chart types
+22 technology stacks supported
+</code></pre>
+<h3>Supported Tech Stacks (22 Total)</h3>
+<pre><code>React, Next.js, Vue, Nuxt, Svelte, Astro
+SwiftUI, React Native, Flutter
+Tailwind, shadcn/ui
+Jetpack Compose (Android)
+Angular, Laravel, JavaFX
+WPF, WinUI, Avalonia, Uno Platform, UWP
+Three.js, HTML/CSS
+</code></pre>
+<h3>Supported AI Platforms (18 Total)</h3>
+<pre><code>claude, cursor, windsurf, copilot, kiro, roocode
+kilocode, codex, qoder, gemini, trae, opencode
+continue, codebuddy, droid, warp, augment
+antigravity, openclaw
+</code></pre>
+<h3>7 Skill Categories</h3>
+<pre><code>banner-design/     → Banner and header graphics
+brand/             → Brand identity generation, logos, CIP
+design-system/     → Design token architecture
+design/            → Core UI/UX design intelligence
+slides/            → Presentation slide design
+ui-styling/        → Component styling patterns
+ui-ux-pro-max/     → Main searchable database skill
+</code></pre>
+<h3>Premium Tier Features (uupm.cc)</h3>
+<pre><code>Extended Brand Design Skills → Logo, CIP, Banners, Iconography
+Advanced Asset Creation      → AI image generation for real assets
+Enterprise Architecture      → Scalable design tokens for teams
+Priority Support             → Dedicated technical assistance
+</code></pre>
+<h3>Development Commands</h3>
+<pre><code class="language-bash">cd cli
+npm run sync:assets    # mirrors src/ -&gt; cli/assets/ and .claude/skills/
+npm run check:assets   # verify sync, no install required
+</code></pre>
+<hr /></div>
+</details>
+<details class="repo-accordion" id="repo-open-design-nexu-io-open-design">
+  <summary><span class="repo-name">open-design (nexu-io/open-design)</span><span class="chevron">▸</span></summary>
+  <div class="repo-body md-content"><h1>5. open-design (nexu-io/open-design) - 79K+ Stars</h1>
+<h2>The Open-Source Claude Design Alternative</h2>
+<p><strong>Description:</strong> Local-first, open-source alternative to Anthropic's Claude Design. Turns your existing coding agent (Claude Code, Codex, Cursor, Gemini, OpenCode, Qwen, and 20+ CLIs) into a design engine that generates prototypes, landing pages, dashboards, slides, images, and video with real file exports (HTML/PDF/PPTX/MP4).</p>
+<h3>Installation Commands</h3>
+<pre><code class="language-bash"># Full local development setup
+git clone https://github.com/nexu-io/open-design.git
+cd open-design
+corepack enable &amp;&amp; pnpm install
+pnpm tools-dev run web
+
+# Requirements: Node ~24, pnpm 10.33.x
+# WSL2 users: see docs/wsl-setup.md
+# Native Windows: see docs/windows-troubleshooting.md
+
+# Quick contribution flow (non-coders)
+npx skills add nexu-io/od-contribute
+</code></pre>
+<h3>CLI Commands (<code>od</code> command - runs without UI)</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>od plugin list</code></td>
+<td>List installed plugins (--task-kind / --mode / --tag filters)</td>
+</tr>
+<tr>
+<td><code>od plugin search "&lt;query&gt;"</code></td>
+<td>Search plugins by keyword</td>
+</tr>
+<tr>
+<td><code>od plugin info &lt;plugin-id&gt;</code></td>
+<td>Inspect plugin's metadata, inputs, capabilities</td>
+</tr>
+<tr>
+<td><code>od plugin install &lt;plugin-id&gt;</code></td>
+<td>Install from registry (or local folder / URL)</td>
+</tr>
+<tr>
+<td><code>od plugin apply &lt;plugin-id&gt; --input &lt;key&gt;=&lt;value&gt;</code></td>
+<td>Apply a plugin with inputs</td>
+</tr>
+<tr>
+<td><code>od plugin upgrade &lt;plugin-id&gt;</code></td>
+<td>Upgrade an installed plugin</td>
+</tr>
+<tr>
+<td><code>od plugin uninstall &lt;plugin-id&gt;</code></td>
+<td>Uninstall a plugin</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> Every command supports <code>--json</code> for piping through jq/xargs into automation.
+<strong>Note:</strong> On macOS with Homebrew cask, <code>od</code> may resolve to Apple's built-in octal-dump utility — use full path or the MCP server config instead if this happens.</p>
+<h3>Development/Contribution Commands</h3>
+<pre><code class="language-bash">gh issue list --label &quot;good first issue&quot; --state open --limit 20
+gh issue develop &lt;number&gt;          # create branch and worktree
+pnpm guard &amp;&amp; pnpm typecheck       # run checks before commit
+pnpm --filter @open-design/&lt;package&gt; test   # run package tests
+</code></pre>
+<h3>Core Workflow (7 Stages)</h3>
+<pre><code>brief → plugin → direction → design system → artifact → handoff → memory
+</code></pre>
+<h3>Desktop App Sections</h3>
+<pre><code>Home         → Overview entry point (pick skill + design system, type brief)
+Automation   → Orchestrate repetitive design workflows
+Design System → Distill DESIGN.md into brand contract
+Plugin       → Browse/install/distribute workflow plugins
+Studio       → Per-project: prototypes, HyperFrames, decks, images
+</code></pre>
+<h3>Scale (v0.15.0)</h3>
+<pre><code>259+ Skills
+142+ Design Systems (brand-grade)
+9-section DESIGN.md schema (portable Markdown, not theme JSON)
+371+ contributors
+</code></pre>
+<h3>Supported Coding Agents (20+ CLIs via BYOK)</h3>
+<pre><code>Claude Code, Codex, Cursor, Gemini CLI, OpenCode
+Qwen, Copilot, OpenClaw, Antigravity, Hermes, Kimi
+... and 10+ more
+</code></pre>
+<h3>Output Formats</h3>
+<pre><code>Web prototypes (HTML)
+Desktop/mobile prototypes
+Slide decks (with slides.json sidecar for PPTX export)
+Images
+Videos (MP4)
+HyperFrames
+Export: HTML / PDF / PPTX / MP4
+</code></pre>
+<h3>Plugin Structure (Minimum Requirements)</h3>
+<pre><code>my-plugin/
+├── SKILL.md              # required - executable agent contract
+└── open-design.json      # optional - OD marketplace metadata (sidecar)
+</code></pre>
+<h3>MCP Server Setup (Alternative to CLI)</h3>
+<pre><code>Available in Settings → MCP server in desktop app
+Provides absolute-path client-specific config snippet
+Use when 'od' command conflicts with system utilities
+</code></pre>
+<hr />
+<hr /></div>
+</details>
+    <div class="md-content" style="margin-top:40px;"><h1>MASTER COMPARISON — ALL 10 REPOS</h1>
+<table>
+<thead>
+<tr>
+<th>Repo</th>
+<th>Stars</th>
+<th>Type</th>
+<th>Primary Focus</th>
+<th>Commands</th>
+<th>Agents</th>
+<th>Skills</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ECC</strong></td>
+<td>231K</td>
+<td>Framework</td>
+<td>Agent optimization</td>
+<td>94+</td>
+<td>67</td>
+<td>278+</td>
+</tr>
+<tr>
+<td><strong>Superpowers</strong></td>
+<td>6.3K</td>
+<td>Methodology</td>
+<td>Dev workflow</td>
+<td>5+</td>
+<td>5-10</td>
+<td>20+</td>
+</tr>
+<tr>
+<td><strong>GSD Core</strong></td>
+<td>6.7K</td>
+<td>Orchestrator</td>
+<td>Context management</td>
+<td>5+</td>
+<td>5</td>
+<td>Integrated</td>
+</tr>
+<tr>
+<td><strong>Ponytail</strong></td>
+<td>85K</td>
+<td>Principle/Mode</td>
+<td>Code minimization</td>
+<td>10+</td>
+<td>Custom</td>
+<td>12</td>
+</tr>
+<tr>
+<td><strong>Graphify</strong></td>
+<td>90K</td>
+<td>Analyzer</td>
+<td>Knowledge graph (code)</td>
+<td>8+</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>claude-obsidian</strong></td>
+<td>9.4K</td>
+<td>Second brain</td>
+<td>Personal knowledge mgmt</td>
+<td>11+</td>
+<td>3</td>
+<td>15</td>
+</tr>
+<tr>
+<td><strong>obsidian-skills</strong></td>
+<td>42K</td>
+<td>Skill pack</td>
+<td>Obsidian CLI/format literacy</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>Multiple</td>
+</tr>
+<tr>
+<td><strong>andrej-karpathy-skills</strong></td>
+<td>192K</td>
+<td>Guideline</td>
+<td>Coding discipline</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>ui-ux-pro-max-skill</strong></td>
+<td>107K</td>
+<td>Database</td>
+<td>UI/UX design intelligence</td>
+<td>6+</td>
+<td>N/A</td>
+<td>7 categories</td>
+</tr>
+<tr>
+<td><strong>open-design</strong></td>
+<td>79K</td>
+<td>Design engine</td>
+<td>Visual artifact generation</td>
+<td>7+</td>
+<td>N/A</td>
+<td>259+</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1>THE COMPLETE INTEGRATED STACK</h1>
+<h2>7 Functional Layers</h2>
+<pre><code>1. KNOWLEDGE LAYER
+   claude-obsidian + obsidian-skills
+   → Builds and queries your persistent second brain
+
+2. BEHAVIOR/DISCIPLINE LAYER
+   andrej-karpathy-skills
+   → Fixes silent assumptions, over-engineering, goal-driven execution
+
+3. CODE MINIMIZATION LAYER
+   Ponytail
+   → Forces minimal, pragmatic, YAGNI-driven solutions
+
+4. WORKFLOW LAYER
+   Superpowers
+   → Structures brainstorm → plan → execute
+
+5. CONTEXT MANAGEMENT LAYER
+   GSD Core
+   → Manages long-running features across phases (Discuss→Plan→Execute→Test→Ship)
+
+6. OPTIMIZATION &amp; QUALITY LAYER
+   ECC
+   → Agent performance, learned instincts, security, verification loops
+
+7. MAPPING &amp; DESIGN LAYER
+   Graphify (code structure) + ui-ux-pro-max-skill (design intelligence) + open-design (design generation)
+   → Understands code structure AND generates visual/design artifacts
+</code></pre>
+<h2>Full Daily Workflow (All 10 Combined)</h2>
+<pre><code>MORNING - Context &amp; Knowledge
+1. /wiki                          (claude-obsidian: check vault status)
+2. ingest [new source]            (claude-obsidian: absorb new info)
+3. /graphify .                    (map current codebase state)
+4. /ponytail ultra                (set minimal-code mode)
+   [Karpathy guidelines auto-applied via CLAUDE.md/plugin throughout]
+
+PLANNING
+5. /brainstorm                    (Superpowers: explore ideas)
+6. /gsd-onboard                   (GSD: understand codebase)
+7. /gsd-plan-feature              (GSD: plan this sprint)
+
+DESIGN (if UI/UX work involved)
+8. uipro search &quot;&lt;design query&gt;&quot;  (ui-ux-pro-max: find design pattern)
+9. od plugin apply &lt;plugin&gt;       (open-design: generate artifact)
+
+EXECUTION
+10. /execute-plan                 (Superpowers: implement)
+11. /ecc:code-review              (ECC: verify quality)
+12. /ecc:quality-gate             (ECC: final checks)
+
+COMPLETION
+13. /gsd-ready-to-ship            (GSD: ship it)
+14. /graphify diff                (see what changed)
+15. /ecc:learn                    (extract patterns for next time)
+16. /save                         (claude-obsidian: file the session)
+</code></pre>
+<hr />
+<h1>COMPLETE INSTALLATION CHECKLIST — ALL 10 REPOS</h1>
+<ul>
+<li>[ ] <strong>ECC</strong>: <code>/plugin marketplace add https://github.com/affaan-m/ECC</code> → <code>/plugin install ecc@ecc</code></li>
+<li>[ ] <strong>Superpowers</strong>: <code>/plugin marketplace add obra/superpowers-marketplace</code> → <code>/plugin install superpowers@superpowers-marketplace</code></li>
+<li>[ ] <strong>GSD Core</strong>: <code>npx @opengsd/gsd-core@latest --install</code></li>
+<li>[ ] <strong>Ponytail</strong>: <code>/plugin marketplace add https://github.com/DietrichGebert/ponytail</code> → <code>/plugin install ponytail@ponytail</code></li>
+<li>[ ] <strong>Graphify</strong>: <code>uv tool install graphify &amp;&amp; graphify install</code></li>
+<li>[ ] <strong>claude-obsidian</strong>: <code>git clone https://github.com/AgriciDaniel/claude-obsidian &amp;&amp; bash bin/setup-vault.sh</code></li>
+<li>[ ] <strong>obsidian-skills</strong>: <code>/plugin marketplace add kepano/obsidian-skills</code> → <code>/plugin install obsidian@obsidian-skills</code></li>
+<li>[ ] <strong>andrej-karpathy-skills</strong>: <code>/plugin marketplace add multica-ai/andrej-karpathy-skills</code></li>
+<li>[ ] <strong>ui-ux-pro-max-skill</strong>: <code>/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill</code> → <code>/plugin install ui-ux-pro-max@ui-ux-pro-max-skill</code></li>
+<li>[ ] <strong>open-design</strong>: <code>git clone https://github.com/nexu-io/open-design.git &amp;&amp; pnpm install</code></li>
+<li>[ ] Set environment variables for all</li>
+<li>[ ] Test each with its respective health/status command</li>
+<li>[ ] Bookmark this file for daily reference</li>
+</ul>
+<hr />
+<h1>GRAND TOTAL COMMAND COUNT — ALL 10 REPOS</h1>
+<table>
+<thead>
+<tr>
+<th>Repo</th>
+<th>Commands</th>
+<th>Agents</th>
+<th>Skills</th>
+<th>Subtotal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ECC</td>
+<td>94+</td>
+<td>67</td>
+<td>278+</td>
+<td><strong>439+</strong></td>
+</tr>
+<tr>
+<td>Superpowers</td>
+<td>5+</td>
+<td>5-10</td>
+<td>20+</td>
+<td><strong>30+</strong></td>
+</tr>
+<tr>
+<td>GSD Core</td>
+<td>5+</td>
+<td>5</td>
+<td>Integrated</td>
+<td><strong>10+</strong></td>
+</tr>
+<tr>
+<td>Ponytail</td>
+<td>10+</td>
+<td>Custom</td>
+<td>12</td>
+<td><strong>22+</strong></td>
+</tr>
+<tr>
+<td>Graphify</td>
+<td>8+</td>
+<td>1</td>
+<td>1</td>
+<td><strong>10+</strong></td>
+</tr>
+<tr>
+<td>claude-obsidian</td>
+<td>11+</td>
+<td>3</td>
+<td>15</td>
+<td><strong>29+</strong></td>
+</tr>
+<tr>
+<td>obsidian-skills</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>Multiple</td>
+<td><strong>~5+</strong></td>
+</tr>
+<tr>
+<td>andrej-karpathy-skills</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>1</td>
+<td><strong>1+</strong></td>
+</tr>
+<tr>
+<td>ui-ux-pro-max-skill</td>
+<td>6+</td>
+<td>N/A</td>
+<td>7 categories</td>
+<td><strong>13+</strong></td>
+</tr>
+<tr>
+<td>open-design</td>
+<td>7+</td>
+<td>N/A</td>
+<td>259+</td>
+<td><strong>266+</strong></td>
+</tr>
+<tr>
+<td><strong>GRAND TOTAL</strong></td>
+<td><strong>146+</strong></td>
+<td><strong>88-93</strong></td>
+<td><strong>595+</strong></td>
+<td><strong>~825+</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>All 10 repos combined provide 825+ commands, agents, and skills.</strong>
+<strong>This single file is your complete, definitive AI coding assistant command reference — covering optimization, workflow, context, minimalism, code mapping, personal knowledge management, coding discipline, and design generation.</strong></p>
+<p><strong>Bookmark and master these tools for peak productivity!</strong> 🚀</p></div>
+  </section>
+
+  <!-- INTERNALS -->
+  <section class="doc-section" id="extras">
+    <div class="section-head">
+      <div class="section-eyebrow">07 · Under the covers</div>
+      <h2>Internals</h2>
+      <p>CLI details, install/update flow, file reference, design decisions, known gaps.</p>
+    </div>
+    <div class="md-content"><h2>The CLI Tool (<code>superstack</code>)</h2>
+<p>A single executable script (<code>bin/superstack</code> for Mac/Linux, <code>bin/superstack.ps1</code>
+for Windows) that you run from your terminal — separate from Claude Code chat.</p>
+<pre><code>superstack install [--with-design]   Installs/verifies all 10 repos + router + hooks
+superstack init &lt;name&gt;               Creates a new SuperStack-enabled project
+superstack migrate &lt;path&gt;            Adds SuperStack to an existing project
+superstack doctor                    Health-checks the entire stack
+superstack update                    Pulls the latest version of all 10 repos
+superstack uninstall                 Removes SuperStack's global files
+superstack version                   Prints the version number
+</code></pre>
+<p>Each subcommand is a shell function inside one script — there's no separate
+binary per command. <code>install.sh</code> (the one-liner) is a thin wrapper that clones
+this script to <code>~/.claude/superstack/</code>, links it onto your PATH, then calls
+<code>superstack install</code> itself.</p>
+<hr />
+<hr />
+<h2>Installation Flow, Step by Step</h2>
+<pre><code>1. User runs: curl ... install.sh | bash   (or install.ps1 on Windows)
+2. Script checks for git → clones/updates the superstack scripts to
+   ~/.claude/superstack/
+3. Adds `superstack` to PATH (~/.local/bin, added to .bashrc/.zshrc if needed)
+4. Calls `superstack install`, which:
+   a. Checks git, node, npx are present (hard requirement)
+   b. For each of the 10 repos: checks if already installed
+      → if yes, skip (idempotent — safe to re-run)
+      → if no, install from its official GitHub/npm/plugin source
+   c. Copies the global CLAUDE.md router into ~/.claude/CLAUDE.md
+      → if one already exists, backs it up first, then merges
+   d. Copies hooks.json into ~/.claude/hooks/
+5. Prints next steps: `superstack init &lt;name&gt;` or `superstack doctor`
+</code></pre>
+<p>open-design is skipped by default (it needs a full Node 24 + pnpm dev
+environment) — pass <code>--with-design</code> to include it.</p>
+<hr />
+<hr />
+<h2>Update Flow, Step by Step</h2>
+<pre><code>User runs: superstack update
+
+1. Updates the Claude Code plugin marketplace, then updates each plugin:
+   ecc, superpowers, ponytail, claude-obsidian, obsidian-skills,
+   andrej-karpathy-skills, ui-ux-pro-max
+2. Re-runs the gsd-core installer (always pulls its @latest tag)
+3. Upgrades graphify via `uv tool upgrade` (or pipx)
+4. Updates the uipro CLI via npm, if installed
+5. If open-design was installed: `git pull --ff-only` inside ~/open-design
+6. Pulls the latest superstack scripts themselves, then re-copies the
+   router + hooks in case they changed
+7. Tells you to run `superstack doctor` to confirm everything is healthy
+</code></pre>
+<p>Nothing here touches your projects' <code>.vault/</code> or <code>.graphify/</code> — updates only
+affect the global tools, never your project memory.</p>
+<hr />
+<hr />
+<h2>File-by-File Reference</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Location</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td><code>~/.claude/</code> (global)</td>
+<td>The Master Router — read every session</td>
+</tr>
+<tr>
+<td><code>hooks.json</code></td>
+<td><code>~/.claude/hooks/</code></td>
+<td>SessionStart memory load + Stop cache trim</td>
+</tr>
+<tr>
+<td><code>superstack</code></td>
+<td><code>~/.claude/superstack/bin/</code></td>
+<td>The CLI tool (Mac/Linux)</td>
+</tr>
+<tr>
+<td><code>superstack.ps1</code></td>
+<td><code>~/.claude/superstack/bin/</code></td>
+<td>The CLI tool (Windows)</td>
+</tr>
+<tr>
+<td><code>CLAUDE.project.md</code></td>
+<td><code>templates/</code></td>
+<td>Copied as <code>CLAUDE.md</code> into every new project</td>
+</tr>
+<tr>
+<td><code>superstack.json</code></td>
+<td><code>templates/</code> → project root</td>
+<td>Per-project config: ponytail level, enabled repos</td>
+</tr>
+<tr>
+<td><code>hot.md</code></td>
+<td><code>templates/vault/</code> → <code>.vault/</code></td>
+<td>Rolling recent-context cache</td>
+</tr>
+<tr>
+<td><code>index.md</code></td>
+<td><code>templates/vault/</code> → <code>.vault/</code></td>
+<td>Table of contents of vault knowledge</td>
+</tr>
+<tr>
+<td><code>log.md</code></td>
+<td><code>templates/vault/</code> → <code>.vault/</code></td>
+<td>Ingestion/session history</td>
+</tr>
+<tr>
+<td><code>wiki/</code></td>
+<td><code>templates/vault/</code> → <code>.vault/</code></td>
+<td>Individual knowledge pages</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<hr />
+<h2>Design Decisions &amp; Trade-offs</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Why</th>
+<th>Trade-off Accepted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vault lives inside each project</td>
+<td>Portable — clones/forks keep memory</td>
+<td>Vault becomes part of your git history (can <code>.gitignore</code> it if unwanted)</td>
+</tr>
+<tr>
+<td>Install downloads live from official sources (no bundling)</td>
+<td>Always latest, respects each repo's license, keeps SuperStack's own repo tiny</td>
+<td>Requires internet at install/update time</td>
+</tr>
+<tr>
+<td>Router is a Markdown file, not code</td>
+<td>Only way to encode judgment-based routing</td>
+<td>Not 100% mechanically deterministic (see Section 18)</td>
+</tr>
+<tr>
+<td>Preview shown for NORMAL by default</td>
+<td>Matches "confirm before acting" preference</td>
+<td>Adds one extra confirmation step per prompt (mitigated by <code>/skip</code>)</td>
+</tr>
+<tr>
+<td>Heavy/destructive always preview, <code>/skip</code> can't bypass</td>
+<td>Safety net for irreversible or large-blast-radius actions</td>
+<td>Slightly slower for legitimately-repeated heavy operations</td>
+</tr>
+<tr>
+<td>Only ~30% of each repo's commands are auto-routed</td>
+<td>Keeps the router simple and reliable</td>
+<td>The other ~70% of specialized commands must be called by name</td>
+</tr>
+<tr>
+<td>open-design excluded by default</td>
+<td>It requires a heavy Node 24 + pnpm dev setup</td>
+<td>Must opt in explicitly with <code>--with-design</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<hr />
+<h2>Known Gaps &amp; Limitations</h2>
+<p>Stated plainly, with no hedging:</p>
+<ol>
+<li><strong>Routing consistency is not mechanically guaranteed.</strong> The router is
+   instructions for Claude to follow, not compiled logic. The same prompt
+   asked twice will <em>usually</em> route the same way, but Claude's judgment can
+   occasionally classify a task differently (e.g., miss that something
+   qualifies as "heavy"). A script always behaves identically; Claude's
+   judgment does not.</li>
+<li><strong>Only common commands are auto-triggered.</strong> Roughly 30% of the commands
+   across all 10 repos are wired into the intent table. The rest (e.g.
+   <code>/ecc:go-review</code>, <code>/ecc:instinct-export</code>, most <code>od plugin</code> variants) work
+   fine but only if you call them by name yourself.</li>
+<li><strong>Hooks can't read intent.</strong> <code>SessionStart</code>/<code>Stop</code> only run fixed shell
+   commands (cat a file, trim a file) — they cannot decide "was this prompt
+   vague." Judgment always lives in the router, never in a hook.</li>
+<li><strong>Plugin install commands can vary by Claude Code version.</strong> If a
+   <code>/plugin install</code> call fails during <code>superstack install</code>, the script
+   prints the exact manual command to run instead of failing silently.</li>
+<li><strong>open-design is heavy.</strong> It needs Node 24 and pnpm and is excluded from
+   the default install specifically because of this weight.</li>
+</ol>
+<hr /></div>
+  </section>
+
+  <footer>
+    <span>claude_superstack — complete interactive reference</span>
+    <span><a href="https://github.com/shantosaha/claude_superstack" target="_blank">github.com/shantosaha/claude_superstack</a></span>
+  </footer>
+</div>
+
+<button id="toTop" title="Back to top">↑</button>
+
+<script>
+(function(){
+  // wrap bare tables
+  document.querySelectorAll('.md-content table').forEach(function(t){
+    if(t.parentNode.classList.contains('table-wrap'))return;
+    var w=document.createElement('div');w.className='table-wrap';
+    t.parentNode.insertBefore(w,t);w.appendChild(t);
+  });
+
+  // add IDs to all md-content headings for sidebar linking
+  document.querySelectorAll('.md-content h1,.md-content h2,.md-content h3').forEach(function(h){
+    if(!h.id){
+      h.id='h-'+h.textContent.replace(/[^a-zA-Z0-9]+/g,'-').toLowerCase().slice(0,50);
+    }
+  });
+
+  // progress
+  var prog=document.getElementById('progress');
+  function updateProg(){var h=document.documentElement;prog.style.width=((h.scrollTop)/(h.scrollHeight-h.clientHeight)*100||0)+'%';}
+  addEventListener('scroll',updateProg,{passive:true});
+
+  // back to top
+  var toTop=document.getElementById('toTop');
+  addEventListener('scroll',function(){toTop.classList.toggle('show',scrollY>500);},{passive:true});
+  toTop.onclick=function(){scrollTo({top:0,behavior:'smooth'});};
+
+  // sidebar toggle (mobile)
+  var sidebar=document.getElementById('sidebar');
+  document.getElementById('sidebarToggle').onclick=function(){sidebar.classList.toggle('open');};
+
+  // scrollspy
+  var sections=Array.from(document.querySelectorAll('.doc-section[id]'));
+  var sideLinks=Array.from(document.querySelectorAll('.side-link'));
+  var subLinks=Array.from(document.querySelectorAll('.side-sub-link'));
+  var subNav=document.querySelector('.side-sub');
+    // all sub-section anchors for how-it-works
+  var subAnchors = Array.from(document.querySelectorAll('[id^="sec-"]'));
+  function spy(){
+
+    var pos=scrollY+120,cur='overview';
+    for(var i=0;i<sections.length;i++)if(sections[i].offsetTop<=pos)cur=sections[i].id;
+    sideLinks.forEach(function(l){
+l.classList.toggle('active',l.dataset.section===cur);}
+);
+    var showSub=cur==='how-it-works';
+    if(subNav) subNav.classList.toggle('open',showSub);
+    // highlight active sub-link
+    var curSub='';
+    for(var j=0;j<subAnchors.length;j++){
+
+      if(subAnchors[j].offsetTop<=pos) curSub=subAnchors[j].id;
+    }
+
+    subLinks.forEach(function(l){
+
+      var href=l.getAttribute('href');
+      l.classList.toggle('active', href && href.slice(1)===curSub);
+    }
+);
+  }
+
+  addEventListener('scroll',spy,{passive:true});spy();
+  document.querySelectorAll('.side-link,.side-sub-link').forEach(function(l){
+    l.addEventListener('click',function(){sidebar.classList.remove('open');});
+  });
+
+  // section reveal on scroll
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('inview');});
+  },{threshold:0.05,rootMargin:'0px 0px -40px 0px'});
+  sections.forEach(function(s){io.observe(s);});
+
+  // stat counters
+  var counters=document.querySelectorAll('.stat .num'),counted=false;
+  var statsEl=document.querySelector('.stats');
+  if(statsEl){new IntersectionObserver(function(e){
+    e.forEach(function(entry){
+      if(!entry.isIntersecting||counted)return;counted=true;
+      counters.forEach(function(el){
+        var t=+el.dataset.count,st=performance.now();
+        (function step(ts){var p=Math.min((ts-st)/700,1);
+          el.textContent=Math.floor(p*t)+(p>=1&&t===113?'+':'');
+          if(p<1)requestAnimationFrame(step);})(st);
+      });
+    });
+  },{threshold:.3}).observe(statsEl);}
+
+  // theme toggle
+  var themeBtn=document.createElement('div');
+  themeBtn.innerHTML='<button class="sidebar-btn" id="themeBtn" title="Toggle theme">☀️</button>';
+  var controls=document.createElement('div');controls.className='sidebar-controls';
+  controls.appendChild(themeBtn.firstChild);
+  document.querySelector('.sidebar-sections').appendChild(controls);
+  var root=document.documentElement;
+  var stored=localStorage.getItem('ss-theme');
+  function applyTheme(m){
+    root.classList.remove('force-dark','force-light');
+    var btn=document.getElementById('themeBtn');
+    if(m==='dark'){root.classList.add('force-dark');btn.textContent='☀️';}
+    else if(m==='light'){root.classList.add('force-light');btn.textContent='🌙';}
+    else{btn.textContent=matchMedia('(prefers-color-scheme:dark)').matches?'☀️':'🌙';}
+  }
+  applyTheme(stored||'auto');
+  document.getElementById('themeBtn').onclick=function(){
+    var isDark=root.classList.contains('force-dark')||(!root.classList.contains('force-light')&&matchMedia('(prefers-color-scheme:dark)').matches);
+    var next=isDark?'light':'dark';
+    localStorage.setItem('ss-theme',next);applyTheme(next);
+  };
+
+  // command filter
+  var cmdSearch=document.getElementById('cmdSearch');
+  var cmdCount=document.getElementById('cmdCount');
+  if(cmdSearch){
+    var allRows=Array.from(document.querySelectorAll('#cmdTables .table-wrap'));
+    // actually filter table rows
+    cmdSearch.addEventListener('input',function(){
+      var q=cmdSearch.value.trim().toLowerCase();
+      var shown=0,total=0;
+      document.querySelectorAll('#cmdTables tr').forEach(function(row){
+        if(row.parentNode.tagName==='THEAD')return;
+        total++;
+        var match=!q||row.textContent.toLowerCase().includes(q);
+        row.style.display=match?'':'none';
+        if(match)shown++;
+      });
+      cmdCount.textContent=q?shown+' of '+total+' commands shown':'';
+    });
+  }
+
+  // global search
+  var searchInput=document.getElementById('search');
+  var searchCountEl=document.getElementById('searchcount');
+  var marks=[];
+  function clearMarks(){marks.forEach(function(m){var p=m.parentNode;if(p){p.replaceChild(document.createTextNode(m.textContent),m);p.normalize();}});marks=[];}
+  var st;
+  searchInput.addEventListener('input',function(){clearTimeout(st);st=setTimeout(runSearch,250);});
+  function runSearch(){
+    var q=searchInput.value.trim();clearMarks();
+    if(q.length<2){searchCountEl.style.display='none';return;}
+    var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+    var w=document.createTreeWalker(document.querySelector('.main-content'),NodeFilter.SHOW_TEXT,{
+      acceptNode:function(n){if(!n.nodeValue.trim())return 2;if(n.parentNode.closest('script,style,.search-bar,input'))return 2;return re.test(n.nodeValue)?1:2;}
+    });
+    var nodes=[];var n;while((n=w.nextNode()))nodes.push(n);
+    nodes.forEach(function(node){var s=document.createElement('span');s.innerHTML=node.nodeValue.replace(re,'<mark class="hit">$1</mark>');node.parentNode.replaceChild(s,node);s.querySelectorAll('mark.hit').forEach(function(m){marks.push(m);});});
+    searchCountEl.style.display='inline';
+    searchCountEl.textContent=marks.length+(marks.length===1?' match':' matches');
+    if(marks.length)marks[0].scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  searchInput.addEventListener('keydown',function(e){if(e.key==='Escape'){searchInput.value='';clearMarks();searchCountEl.style.display='none';searchInput.blur();}});
+})();
+</script>
+</body>
+</html>
