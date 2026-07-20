@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+
+    <!-- Glow Filter -->
+    <filter id="terminalGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes typingText {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    @keyframes lineReveal {
+      0% { opacity: 0; transform: translateY(5px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .bg { fill: url(#bgGrad); }
+    
+    .window-header {
+      fill: #1e293b;
+    }
+
+    .window-dot {
+      r: 6;
+      cy: 15;
+    }
+
+    .dot-red { fill: #ef4444; cx: 20; }
+    .dot-yellow { fill: #f59e0b; cx: 40; }
+    .dot-green { fill: #10b981; cx: 60; }
+
+    .terminal-text {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      fill: #f8fafc;
+    }
+
+    .prompt {
+      fill: #38bdf8;
+      font-weight: bold;
+    }
+
+    .cmd-text {
+      fill: #e2e8f0;
+      font-weight: bold;
+    }
+
+    .success-text {
+      fill: #34d399;
+      filter: drop-shadow(0 0 2px rgba(52, 211, 153, 0.4));
+    }
+
+    .info-text {
+      fill: #94a3b8;
+    }
+
+    .cursor {
+      fill: #38bdf8;
+      animation: cursorBlink 1s step-end infinite;
+    }
+
+    .animated-line-1 {
+      animation: lineReveal 0.5s ease-out forwards;
+    }
+
+    .animated-line-2 {
+      opacity: 0;
+      animation: lineReveal 0.5s ease-out 1.2s forwards;
+    }
+
+    .animated-line-3 {
+      opacity: 0;
+      animation: lineReveal 0.5s ease-out 1.8s forwards;
+    }
+
+    .animated-line-4 {
+      opacity: 0;
+      animation: lineReveal 0.5s ease-out 2.4s forwards;
+    }
+
+    .animated-line-5 {
+      opacity: 0;
+      animation: lineReveal 0.5s ease-out 3s forwards;
+    }
+  </style>
+
+  <!-- Background Terminal Box -->
+  <rect width="100%" height="100%" class="bg" rx="10" stroke="#334155" stroke-width="1.5" />
+  
+  <!-- Header Bar -->
+  <rect width="100%" height="30" class="window-header" rx="10" />
+  <!-- Circles to mimic window controls -->
+  <circle class="window-dot dot-red" />
+  <circle class="window-dot dot-yellow" />
+  <circle class="window-dot dot-green" />
+  <text x="400" y="20" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">SuperStack CLI — Doctor Healthcheck</text>
+
+  <!-- Content Area -->
+  <g transform="translate(25, 45)">
+    <!-- Line 1: CLI Prompt & Typing -->
+    <g class="animated-line-1">
+      <text x="0" y="20" class="terminal-text prompt">frankenstein@superstack:~ $</text>
+      <text x="215" y="20" class="terminal-text cmd-text">superstack doctor</text>
+      <rect x="360" y="8" width="8" height="15" class="cursor" />
+    </g>
+
+    <!-- Line 2: Action start -->
+    <g class="animated-line-2">
+      <text x="0" y="50" class="terminal-text info-text">[*] Executing SuperStack global environment diagnostics...</text>
+    </g>
+
+    <!-- Line 3: Diagnostic items -->
+    <g class="animated-line-3">
+      <text x="0" y="80" class="terminal-text success-text">✔ Global Router Active (hooking SessionStart / Stop)</text>
+    </g>
+
+    <!-- Line 4: Framework status -->
+    <g class="animated-line-4">
+      <text x="0" y="110" class="terminal-text success-text">✔ 10/10 Framework Integrations Verified &amp; Installed</text>
+      <text x="420" y="110" class="terminal-text info-text">(Obsidian, Graphify, Ponytail, ECC, etc.)</text>
+    </g>
+
+    <!-- Line 5: Ready State -->
+    <g class="animated-line-5">
+      <text x="0" y="145" class="terminal-text success-text" style="font-weight: bold; font-size: 14px;" filter="url(#terminalGlow)">STATUS: READY (SuperStack dev environment is fully operational)</text>
+    </g>
+  </g>
+</svg>

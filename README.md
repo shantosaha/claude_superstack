@@ -76,6 +76,10 @@ bash install.sh          # macOS / Linux / WSL
 
 ## Commands
 
+<p align="center">
+  <img src="documents/assets/superstack-commands.svg" alt="SuperStack CLI Commands" width="100%" />
+</p>
+
 ```bash
 superstack install   # install/verify all 10 repos + global router + hooks
 superstack init x    # create new project 'x' (vault + graph + config, auto-wired)
