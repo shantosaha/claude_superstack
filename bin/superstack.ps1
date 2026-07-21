@@ -220,10 +220,12 @@ function Uninstall-Plugins {
 function Uninstall-CliAndRepos {
   Remove-Item (Join-Path $BinDir "superstack.ps1") -ErrorAction SilentlyContinue
   Remove-Item (Join-Path $ClaudeDir "gsd-core") -Recurse -Force -ErrorAction SilentlyContinue
-  Remove-Item (Join-Path $ClaudeDir "gsd-migration-journal") -ErrorAction SilentlyContinue
+  Remove-Item (Join-Path $ClaudeDir "gsd-migration-journal") -Recurse -Force -ErrorAction SilentlyContinue
   Remove-Item (Join-Path $ClaudeDir "gsd-file-manifest.json") -ErrorAction SilentlyContinue
   Remove-Item (Join-Path $ClaudeDir "gsd-install-state.json") -ErrorAction SilentlyContinue
   Remove-Item (Join-Path $ClaudeDir "agents\gsd-*.md") -ErrorAction SilentlyContinue
+  Remove-Item (Join-Path $ClaudeDir "hooks\lib\gsd-*") -ErrorAction SilentlyContinue
+  Remove-Item (Join-Path $ClaudeDir "commands\gsd:*.md") -ErrorAction SilentlyContinue
   Remove-Item $SSHome -Recurse -Force -ErrorAction SilentlyContinue
   if (Have "uv") { uv tool uninstall graphify 2>$null | Out-Null }
   if (Have "pipx") { pipx uninstall graphify 2>$null | Out-Null }
@@ -242,9 +244,23 @@ function Confirm-Category($msg){
   return ($a -eq "y")
 }
 
+function Ensure-SSHome {
+  # A prior 'uninstall -All' removes $SSHome entirely. Re-clone it here so
+  # install is self-healing even when invoked directly (not via install.ps1).
+  if (-not (Test-Path (Join-Path $SSHome "global\CLAUDE.md"))) {
+    $repoUrl = if ($env:SUPERSTACK_REPO) { $env:SUPERSTACK_REPO } else { "https://github.com/shantosaha/claude_superstack.git" }
+    Warn "SuperStack scripts missing at $SSHome - re-cloning from $repoUrl"
+    git clone --depth 1 $repoUrl $SSHome 2>$null | Out-Null
+    if (-not (Test-Path (Join-Path $SSHome "global\CLAUDE.md"))) {
+      Record-Failure "superstack scripts" "clone failed - run manually: git clone $repoUrl $SSHome"
+    }
+  }
+}
+
 switch ($Command) {
   "install"  {
     Write-Host "claude_superstack v$Version - installing"
+    Ensure-SSHome
     Install-Repos
     Install-GlobalFiles
     Write-Host ""

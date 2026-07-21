@@ -232,9 +232,27 @@ run_health_checks(){
   echo "Result: $ok OK, $warn warnings."
 }
 
+ensure_ss_home(){
+  # A prior `uninstall --all` removes $SS_HOME and the ~/.local/bin symlink
+  # entirely. Re-create both here so `install` is self-healing even when
+  # invoked directly (not via install.sh).
+  if [ ! -f "$SS_HOME/global/CLAUDE.md" ]; then
+    local repo_url="${SUPERSTACK_REPO:-https://github.com/shantosaha/claude_superstack.git}"
+    c_yellow "  SuperStack scripts missing at $SS_HOME — re-cloning from $repo_url"
+    git clone --depth 1 "$repo_url" "$SS_HOME" >/dev/null 2>&1 \
+      || record_failure "superstack scripts" "clone failed — run manually: git clone $repo_url $SS_HOME"
+  fi
+  if [ ! -e "$BIN_DIR/superstack" ]; then
+    mkdir -p "$BIN_DIR"
+    ln -sf "$SS_HOME/bin/superstack" "$BIN_DIR/superstack"
+    info "✅ relinked $BIN_DIR/superstack (was missing — is $BIN_DIR on your PATH?)"
+  fi
+}
+
 cmd_install(){
   echo "🚀 claude_superstack v$VERSION — installing"
   require_tools
+  ensure_ss_home
   install_all_repos
   install_global_files
   echo ""
@@ -368,8 +386,11 @@ uninstall_cli_and_repos(){
   # Absolute, explicit paths only — never $PWD-derived, never touches project files.
   rm -f "$BIN_DIR/superstack"
   rm -rf "$CLAUDE_DIR/gsd-core"
-  rm -f "$CLAUDE_DIR/gsd-migration-journal" "$CLAUDE_DIR/gsd-file-manifest.json" "$CLAUDE_DIR/gsd-install-state.json"
+  rm -rf "$CLAUDE_DIR/gsd-migration-journal"
+  rm -f "$CLAUDE_DIR/gsd-file-manifest.json" "$CLAUDE_DIR/gsd-install-state.json"
   rm -f "$CLAUDE_DIR"/agents/gsd-*.md 2>/dev/null
+  rm -f "$CLAUDE_DIR"/hooks/lib/gsd-*.sh "$CLAUDE_DIR"/hooks/lib/gsd-*.js 2>/dev/null
+  rm -f "$CLAUDE_DIR"/commands/gsd:*.md 2>/dev/null
   rm -rf "$SS_HOME"
   if have uv; then uv tool uninstall graphify >/dev/null 2>&1 || true; fi
   if have pipx; then pipx uninstall graphify >/dev/null 2>&1 || true; fi
