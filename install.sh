@@ -30,7 +30,8 @@ case ":$PATH:" in
   *) SHELL_RC="$HOME/.bashrc"; [ -n "${ZSH_VERSION:-}" ] || [ "$(basename "${SHELL:-}")" = "zsh" ] && SHELL_RC="$HOME/.zshrc"
      echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$SHELL_RC"
      export PATH="$BIN_DIR:$PATH"
-     echo "  ✅ added ~/.local/bin to PATH ($SHELL_RC)" ;;
+     echo "  ✅ added ~/.local/bin to PATH ($SHELL_RC)"
+     echo "  ℹ️  this only applies to this script's session — in your own shell, run: source $SHELL_RC" ;;
 esac
 
 # 3. Run the full installer (checks each repo, installs what's missing)
