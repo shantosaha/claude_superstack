@@ -8,7 +8,7 @@ $ErrorActionPreference = "Continue"
 $SSHome    = Join-Path $HOME ".claude\superstack"
 $ClaudeDir = Join-Path $HOME ".claude"
 $BinDir    = Join-Path $HOME ".local\bin"
-$Version   = "1.0.0"
+$Version   = "1.1.0"
 
 function Have($n){ [bool](Get-Command $n -ErrorAction SilentlyContinue) }
 function Info($m){ Write-Host "  $m" }
