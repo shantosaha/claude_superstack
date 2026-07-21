@@ -39,7 +39,7 @@ $PluginSpecs = @(
   @{Market="https://github.com/DietrichGebert/ponytail"; Spec="ponytail@ponytail"; Name="ponytail"},
   @{Market="AgriciDaniel/claude-obsidian"; Spec="claude-obsidian@agricidaniel-claude-obsidian"; Name="claude-obsidian"},
   @{Market="kepano/obsidian-skills"; Spec="obsidian@obsidian-skills"; Name="obsidian"},
-  @{Market="multica-ai/andrej-karpathy-skills"; Spec="andrej-karpathy-skills@multica-ai"; Name="karpathy"},
+  @{Market="multica-ai/andrej-karpathy-skills"; Spec="andrej-karpathy-skills@karpathy-skills"; Name="karpathy"},
   @{Market="nextlevelbuilder/ui-ux-pro-max-skill"; Spec="ui-ux-pro-max@ui-ux-pro-max-skill"; Name="ui-ux-pro-max"}
 )
 
@@ -131,7 +131,9 @@ function Install-GlobalFiles {
   }
   $hooksTarget = Join-Path $ClaudeDir "hooks\hooks.json"
   $hooksSrc = Join-Path $SSHome "global\hooks\hooks.json"
-  if ((Test-Path $hooksTarget) -and -not (Select-String -Path $hooksTarget -Pattern "SUPERSTACK MEMORY" -Quiet)) {
+  if ((Test-Path $hooksTarget) -and (Select-String -Path $hooksTarget -Pattern "SUPERSTACK MEMORY" -Quiet)) {
+    Info "OK hooks.json already has SuperStack hooks (no change)"
+  } elseif (Test-Path $hooksTarget) {
     Copy-Item $hooksSrc (Join-Path $ClaudeDir "hooks\hooks.superstack.json") -Force
     Record-Skipped "hooks.json" "existing hooks.json found - SuperStack hooks saved to hooks.superstack.json; merge manually"
   } else {

@@ -53,7 +53,7 @@ PLUGIN_SPECS=(
   "https://github.com/DietrichGebert/ponytail|ponytail@ponytail|ponytail"
   "AgriciDaniel/claude-obsidian|claude-obsidian@agricidaniel-claude-obsidian|claude-obsidian"
   "kepano/obsidian-skills|obsidian@obsidian-skills|obsidian-skills"
-  "multica-ai/andrej-karpathy-skills|andrej-karpathy-skills@multica-ai|karpathy"
+  "multica-ai/andrej-karpathy-skills|andrej-karpathy-skills@karpathy-skills|karpathy"
   "nextlevelbuilder/ui-ux-pro-max-skill|ui-ux-pro-max@ui-ux-pro-max-skill|ui-ux-pro-max"
 )
 
@@ -179,8 +179,12 @@ install_global_files(){
     info "✅ Global CLAUDE.md (Master Router) installed"
   fi
 
-  # Hooks: install if none, else warn with exact merge command
-  if [ -f "$CLAUDE_DIR/hooks/hooks.json" ] && ! grep -q "SUPERSTACK MEMORY" "$CLAUDE_DIR/hooks/hooks.json" 2>/dev/null; then
+  # Hooks: install if none, skip if already present (idempotent — never overwrite
+  # a file that already has SuperStack's marker, since it may be hand-merged with
+  # another tool's hooks), else warn with exact merge command.
+  if [ -f "$CLAUDE_DIR/hooks/hooks.json" ] && grep -q "SUPERSTACK MEMORY" "$CLAUDE_DIR/hooks/hooks.json" 2>/dev/null; then
+    info "✅ hooks.json already has SuperStack hooks (no change)"
+  elif [ -f "$CLAUDE_DIR/hooks/hooks.json" ]; then
     cp "$SS_HOME/global/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.superstack.json"
     record_skipped "hooks.json" "existing hooks.json found — SuperStack hooks saved to hooks.superstack.json; merge manually: diff ~/.claude/hooks/hooks.json ~/.claude/hooks/hooks.superstack.json"
   else
