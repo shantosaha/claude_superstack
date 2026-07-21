@@ -124,22 +124,22 @@ install_all_repos(){
     fi
   fi
 
-  # Graphify
+  # Graphify (PyPI package is "graphifyy" — the CLI it installs is "graphify")
   if have graphify; then
     info "✅ graphify already installed"
   elif have uv; then
-    if uv tool install graphify >/dev/null 2>&1 && graphify install >/dev/null 2>&1; then
+    if uv tool install graphifyy >/dev/null 2>&1 && graphify install >/dev/null 2>&1; then
       info "✅ graphify installed (uv)"
     else
-      record_failure "graphify" "run: uv tool install graphify && graphify install"
+      record_failure "graphify" "run: uv tool install graphifyy && graphify install"
     fi
   elif have pipx; then
     if ! have python3 && ! have python; then
       record_skipped "graphify" "pipx found but no python3/python on PATH — install Python 3 first: https://python.org"
-    elif pipx install graphify >/dev/null 2>&1 && graphify install >/dev/null 2>&1; then
+    elif pipx install graphifyy >/dev/null 2>&1 && graphify install >/dev/null 2>&1; then
       info "✅ graphify installed (pipx)"
     else
-      record_failure "graphify" "run: pipx install graphify && graphify install"
+      record_failure "graphify" "run: pipx install graphifyy && graphify install"
     fi
   else
     record_skipped "graphify" "needs uv or pipx: https://github.com/Graphify-Labs/graphify"
@@ -220,7 +220,7 @@ run_health_checks(){
   check "claude CLI" "have claude" "install Claude Code"
   check "global CLAUDE.md router" "grep -q CLAUDE-SUPERSTACK '$CLAUDE_DIR/CLAUDE.md' 2>/dev/null" "run: superstack install"
   check "hooks"      "grep -q 'SUPERSTACK MEMORY' '$CLAUDE_DIR/hooks/hooks.json' 2>/dev/null || [ -f '$CLAUDE_DIR/hooks/hooks.superstack.json' ]" "run: superstack install"
-  check "graphify"   "have graphify" "uv tool install graphify"
+  check "graphify"   "have graphify" "uv tool install graphifyy"
   if have claude; then
     for p in ecc superpowers ponytail claude-obsidian obsidian karpathy ui-ux-pro-max; do
       check "plugin: $p" "claude plugin list 2>/dev/null | grep -qi '$p'" "reinstall via superstack install"
@@ -321,8 +321,8 @@ cmd_update(){
   npx --yes @opengsd/gsd-core@latest --install --claude --global >/dev/null 2>&1 \
     && info "✅ updated gsd-core" || c_yellow "⚠️  gsd-core update failed"
   # Graphify
-  if have uv; then uv tool upgrade graphify >/dev/null 2>&1 && info "✅ updated graphify"; fi
-  if have pipx; then pipx upgrade graphify >/dev/null 2>&1 || true; fi
+  if have uv; then uv tool upgrade graphifyy >/dev/null 2>&1 && info "✅ updated graphify"; fi
+  if have pipx; then pipx upgrade graphifyy >/dev/null 2>&1 || true; fi
   # ui-ux-pro-max CLI (if installed via npm)
   have uipro && npm update -g ui-ux-pro-max-cli >/dev/null 2>&1 && info "✅ updated uipro CLI"
   # open-design
@@ -392,8 +392,8 @@ uninstall_cli_and_repos(){
   rm -f "$CLAUDE_DIR"/hooks/lib/gsd-*.sh "$CLAUDE_DIR"/hooks/lib/gsd-*.js 2>/dev/null
   rm -f "$CLAUDE_DIR"/commands/gsd:*.md 2>/dev/null
   rm -rf "$SS_HOME"
-  if have uv; then uv tool uninstall graphify >/dev/null 2>&1 || true; fi
-  if have pipx; then pipx uninstall graphify >/dev/null 2>&1 || true; fi
+  if have uv; then uv tool uninstall graphifyy >/dev/null 2>&1 || true; fi
+  if have pipx; then pipx uninstall graphifyy >/dev/null 2>&1 || true; fi
   have uipro && npm uninstall -g ui-ux-pro-max-cli >/dev/null 2>&1 || true
   info "✅ removed CLI, ~/.claude/superstack, gsd-core commands, graphify, ui-ux CLI"
 }

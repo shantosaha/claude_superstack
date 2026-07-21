@@ -91,15 +91,15 @@ function Install-Repos {
 
   if (Have "graphify") { Info "OK graphify already installed" }
   elseif (Have "uv") {
-    uv tool install graphify 2>$null | Out-Null; graphify install 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) { Info "OK graphify installed" } else { Record-Failure "graphify" "run: uv tool install graphify && graphify install" }
+    uv tool install graphifyy 2>$null | Out-Null; graphify install 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) { Info "OK graphify installed" } else { Record-Failure "graphify" "run: uv tool install graphifyy && graphify install" }
   }
   elseif (Have "pipx") {
     if (-not (Have "python") -and -not (Have "python3")) {
       Record-Skipped "graphify" "pipx found but no python/python3 on PATH - install Python 3 first: https://python.org"
     } else {
-      pipx install graphify 2>$null | Out-Null; graphify install 2>$null | Out-Null
-      if ($LASTEXITCODE -eq 0) { Info "OK graphify installed" } else { Record-Failure "graphify" "run: pipx install graphify && graphify install" }
+      pipx install graphifyy 2>$null | Out-Null; graphify install 2>$null | Out-Null
+      if ($LASTEXITCODE -eq 0) { Info "OK graphify installed" } else { Record-Failure "graphify" "run: pipx install graphifyy && graphify install" }
     }
   }
   else { Record-Skipped "graphify" "needs uv or pipx: https://github.com/Graphify-Labs/graphify" }
@@ -227,8 +227,8 @@ function Uninstall-CliAndRepos {
   Remove-Item (Join-Path $ClaudeDir "hooks\lib\gsd-*") -ErrorAction SilentlyContinue
   Remove-Item (Join-Path $ClaudeDir "commands\gsd:*.md") -ErrorAction SilentlyContinue
   Remove-Item $SSHome -Recurse -Force -ErrorAction SilentlyContinue
-  if (Have "uv") { uv tool uninstall graphify 2>$null | Out-Null }
-  if (Have "pipx") { pipx uninstall graphify 2>$null | Out-Null }
+  if (Have "uv") { uv tool uninstall graphifyy 2>$null | Out-Null }
+  if (Have "pipx") { pipx uninstall graphifyy 2>$null | Out-Null }
   Info "OK removed CLI, superstack home, gsd-core commands, graphify"
 }
 
@@ -286,7 +286,7 @@ switch ($Command) {
                  foreach ($p in $PluginSpecs) {
                    claude plugin update $p.Spec 2>$null | Out-Null; Info "updated $($p.Name)" } }
                npx --yes "@opengsd/gsd-core@latest" --install --claude --global 2>$null | Out-Null
-               if (Have "uv") { uv tool upgrade graphify 2>$null | Out-Null }
+               if (Have "uv") { uv tool upgrade graphifyy 2>$null | Out-Null }
                $od = Join-Path $HOME "open-design"
                if (Test-Path (Join-Path $od ".git")) { git -C $od pull --ff-only 2>$null }
                if (Test-Path (Join-Path $SSHome ".git")) { git -C $SSHome pull --ff-only 2>$null; Install-GlobalFiles }
