@@ -219,7 +219,11 @@ run_health_checks(){
   check "node"       "have node" "install Node.js 20+"
   check "claude CLI" "have claude" "install Claude Code"
   check "global CLAUDE.md router" "grep -q CLAUDE-SUPERSTACK '$CLAUDE_DIR/CLAUDE.md' 2>/dev/null" "run: superstack install"
-  check "hooks"      "grep -q 'SUPERSTACK MEMORY' '$CLAUDE_DIR/hooks/hooks.json' 2>/dev/null || [ -f '$CLAUDE_DIR/hooks/hooks.superstack.json' ]" "run: superstack install"
+  check "hooks"      "grep -q 'SUPERSTACK MEMORY' '$CLAUDE_DIR/hooks/hooks.json' 2>/dev/null" "run: superstack install"
+  if [ -f "$CLAUDE_DIR/hooks/hooks.superstack.json" ]; then
+    c_yellow "⚠️  hooks.superstack.json is waiting to be merged — diff ~/.claude/hooks/hooks.json ~/.claude/hooks/hooks.superstack.json"
+    warn=$((warn+1))
+  fi
   check "graphify"   "have graphify" "uv tool install graphifyy"
   if have claude; then
     for p in ecc superpowers ponytail claude-obsidian obsidian karpathy ui-ux-pro-max; do
@@ -310,9 +314,11 @@ cmd_update(){
     claude plugin marketplace update --all >/dev/null 2>&1 || true
     for spec in "${PLUGIN_SPECS[@]}"; do
       IFS='|' read -r _ pspec name <<< "$spec"
-      claude plugin update "$pspec" >/dev/null 2>&1 \
-        || claude plugin install "$pspec" >/dev/null 2>&1 \
-        && info "✅ updated $name" || c_yellow "⚠️  could not update $name"
+      if claude plugin update "$pspec" >/dev/null 2>&1 || claude plugin install "$pspec" >/dev/null 2>&1; then
+        info "✅ updated $name"
+      else
+        c_yellow "⚠️  could not update $name"
+      fi
     done
   else
     c_yellow "⚠️  'claude' CLI not found — update plugins inside Claude Code (/plugin update)"

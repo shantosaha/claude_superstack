@@ -167,7 +167,11 @@ function Run-HealthChecks {
   CheckItem "node" (Have "node")
   CheckItem "claude CLI" (Have "claude")
   CheckItem "global CLAUDE.md router" (Select-String -Path (Join-Path $ClaudeDir "CLAUDE.md") -Pattern "CLAUDE-SUPERSTACK" -Quiet -ErrorAction SilentlyContinue)
-  CheckItem "hooks" ((Select-String -Path (Join-Path $ClaudeDir "hooks\hooks.json") -Pattern "SUPERSTACK MEMORY" -Quiet -ErrorAction SilentlyContinue) -or (Test-Path (Join-Path $ClaudeDir "hooks\hooks.superstack.json")))
+  CheckItem "hooks" (Select-String -Path (Join-Path $ClaudeDir "hooks\hooks.json") -Pattern "SUPERSTACK MEMORY" -Quiet -ErrorAction SilentlyContinue)
+  if (Test-Path (Join-Path $ClaudeDir "hooks\hooks.superstack.json")) {
+    Warn "WARN hooks.superstack.json is waiting to be merged - diff hooks.json and hooks.superstack.json"
+    $script:warn++
+  }
   CheckItem "graphify" (Have "graphify")
   if (Have "claude") {
     foreach ($p in $PluginSpecs) { CheckItem "plugin: $($p.Name)" (Plugin-Installed $p.Name) }
@@ -284,7 +288,8 @@ switch ($Command) {
   "update"   { if (Have "claude") {
                  claude plugin marketplace update --all 2>$null | Out-Null
                  foreach ($p in $PluginSpecs) {
-                   claude plugin update $p.Spec 2>$null | Out-Null; Info "updated $($p.Name)" } }
+                   claude plugin update $p.Spec 2>$null | Out-Null
+                   if ($LASTEXITCODE -eq 0) { Info "updated $($p.Name)" } else { Warn "could not update $($p.Name)" } } }
                npx --yes "@opengsd/gsd-core@latest" --install --claude --global 2>$null | Out-Null
                if (Have "uv") { uv tool upgrade graphifyy 2>$null | Out-Null }
                $od = Join-Path $HOME "open-design"
