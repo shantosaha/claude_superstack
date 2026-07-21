@@ -209,7 +209,9 @@ its own. They're there for when you want to take control.
 | `superstack migrate <path>` | Add SuperStack to a project you already have |
 | `superstack doctor` | Check that everything is healthy |
 | `superstack update` | Get the latest version of all 10 tools |
-| `superstack uninstall` | Remove SuperStack |
+| `superstack uninstall` | Remove SuperStack's global router + hooks (repos/plugins left installed) |
+| `superstack uninstall --all` | Remove everything global (plugins, CLI, repos), with a confirm prompt per category |
+| `superstack uninstall --all --no-confirm` | Remove everything global, no prompts |
 
 ---
 
