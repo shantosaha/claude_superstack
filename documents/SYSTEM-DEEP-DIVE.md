@@ -542,7 +542,9 @@ superstack init <name>               Creates a new SuperStack-enabled project
 superstack migrate <path>            Adds SuperStack to an existing project
 superstack doctor                    Health-checks the entire stack
 superstack update                    Pulls the latest version of all 10 repos
-superstack uninstall                 Removes SuperStack's global files
+superstack uninstall                 Removes global router + hooks (repos/plugins left installed)
+superstack uninstall --all           Removes everything global, confirm prompt per category
+superstack uninstall --all --no-confirm  Removes everything global, no prompts
 superstack version                   Prints the version number
 ```
 

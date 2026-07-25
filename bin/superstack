@@ -4,7 +4,8 @@ set -uo pipefail
 
 SS_HOME="${SUPERSTACK_HOME:-$HOME/.claude/superstack}"
 CLAUDE_DIR="$HOME/.claude"
-VERSION="1.0.0"
+BIN_DIR="$HOME/.local/bin"
+VERSION="1.1.0"
 
 c_green(){ printf "\033[32m%s\033[0m\n" "$*"; }
 c_yellow(){ printf "\033[33m%s\033[0m\n" "$*"; }
@@ -12,6 +13,24 @@ c_red(){ printf "\033[31m%s\033[0m\n" "$*"; }
 info(){ printf "  %s\n" "$*"; }
 
 have(){ command -v "$1" >/dev/null 2>&1; }
+
+# ---------- shared failure/skip reporting ----------
+FAILURES=()
+SKIPPED=()
+record_failure(){ FAILURES+=("$1: $2"); c_yellow "⚠️  $1: $2"; }
+record_skipped(){ SKIPPED+=("$1: $2"); info "⏭  $1: $2"; }
+print_summary(){
+  if [ ${#FAILURES[@]} -gt 0 ]; then
+    echo ""
+    c_red "Failures:"
+    for f in "${FAILURES[@]}"; do info "✗ $f"; done
+  fi
+  if [ ${#SKIPPED[@]} -gt 0 ]; then
+    echo ""
+    c_yellow "Skipped:"
+    for s in "${SKIPPED[@]}"; do info "⏭ $s"; done
+  fi
+}
 
 require_tools(){
   local missing=()
@@ -28,22 +47,48 @@ require_tools(){
 # ---------- repo install helpers (Option A: live from official sources) ----------
 plugin_installed(){ claude plugin list 2>/dev/null | grep -qi "$1"; }
 
+PLUGIN_SPECS=(
+  "https://github.com/affaan-m/ECC|ecc@ecc|ecc"
+  "obra/superpowers-marketplace|superpowers@superpowers-marketplace|superpowers"
+  "https://github.com/DietrichGebert/ponytail|ponytail@ponytail|ponytail"
+  "AgriciDaniel/claude-obsidian|claude-obsidian@agricidaniel-claude-obsidian|claude-obsidian"
+  "kepano/obsidian-skills|obsidian@obsidian-skills|obsidian-skills"
+  "multica-ai/andrej-karpathy-skills|andrej-karpathy-skills@karpathy-skills|karpathy"
+  "nextlevelbuilder/ui-ux-pro-max-skill|ui-ux-pro-max@ui-ux-pro-max-skill|ui-ux-pro-max"
+)
+
 install_marketplace_plugin(){
   # $1 = marketplace source, $2 = plugin spec, $3 = grep name
-  if have claude; then
-    if plugin_installed "$3"; then info "✅ $3 already installed"; return 0; fi
-    claude plugin marketplace add "$1" >/dev/null 2>&1 || true
-    if claude plugin install "$2" >/dev/null 2>&1; then
-      info "✅ $3 installed"
-    else
-      c_yellow "⚠️  $3: auto-install failed — run manually in Claude Code:"
-      info "    /plugin marketplace add $1"
-      info "    /plugin install $2"
+  if plugin_installed "$3"; then info "✅ $3 already installed"; return 0; fi
+  claude plugin marketplace add "$1" >/dev/null 2>&1 || true
+  claude plugin install "$2" >/dev/null 2>&1 || true
+  if plugin_installed "$3"; then
+    info "✅ $3 installed"
+  else
+    record_failure "$3" "install failed — run manually: /plugin marketplace add $1 && /plugin install $2"
+  fi
+}
+
+preflight_prerequisites(){
+  local need=()
+  have uv || have pipx || need+=("uv (for graphify)")
+  if [ ${#need[@]} -eq 0 ]; then return 0; fi
+  echo ""
+  echo "The following will be installed: ${need[*]}"
+  read -r -p "Proceed? [Y/n] " a
+  if [ "${a:-Y}" = "Y" ] || [ "${a:-Y}" = "y" ]; then
+    if ! have uv && ! have pipx; then
+      if have curl; then
+        curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 \
+          && export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH" \
+          && info "✅ uv installed" \
+          || record_failure "uv" "auto-install failed — install manually: https://github.com/astral-sh/uv"
+      else
+        record_failure "uv" "curl not found — install manually: https://github.com/astral-sh/uv"
+      fi
     fi
   else
-    c_yellow "⚠️  'claude' CLI not found — install $3 manually in Claude Code:"
-    info "    /plugin marketplace add $1"
-    info "    /plugin install $2"
+    record_skipped "graphify" "skipped by choice (uv/pipx prerequisite declined)"
   fi
 }
 
@@ -51,60 +96,68 @@ install_all_repos(){
   echo ""
   echo "── Installing the 10-repo stack (latest from official sources) ──"
 
-  # 1. ECC
-  install_marketplace_plugin "https://github.com/affaan-m/ECC" "ecc@ecc" "ecc"
+  preflight_prerequisites
 
-  # 2. Superpowers
-  install_marketplace_plugin "obra/superpowers-marketplace" "superpowers@superpowers-marketplace" "superpowers"
+  local claude_available=0
+  have claude && claude_available=1
 
-  # 3. GSD Core
-  if [ -d "$CLAUDE_DIR/commands" ] && ls "$CLAUDE_DIR"/commands/gsd-* >/dev/null 2>&1; then
-    info "✅ gsd-core already installed"
+  if [ "$claude_available" -eq 1 ]; then
+    for spec in "${PLUGIN_SPECS[@]}"; do
+      IFS='|' read -r market pspec name <<< "$spec"
+      install_marketplace_plugin "$market" "$pspec" "$name"
+    done
   else
-    npx --yes @opengsd/gsd-core@latest --install --claude --global >/dev/null 2>&1 \
-      && info "✅ gsd-core installed" \
-      || c_yellow "⚠️  gsd-core: run manually: npx @opengsd/gsd-core@latest --install"
+    for spec in "${PLUGIN_SPECS[@]}"; do
+      IFS='|' read -r market pspec name <<< "$spec"
+      record_skipped "$name" "claude CLI not found — install manually: /plugin marketplace add $market && /plugin install $pspec"
+    done
   fi
 
-  # 4. Ponytail
-  install_marketplace_plugin "https://github.com/DietrichGebert/ponytail" "ponytail@ponytail" "ponytail"
+  # GSD Core (not a claude plugin — separate npx installer; installs to ~/.claude/gsd-core)
+  if [ -d "$CLAUDE_DIR/gsd-core" ]; then
+    info "✅ gsd-core already installed"
+  else
+    if npx --yes @opengsd/gsd-core@latest --install --claude --global >/dev/null 2>&1; then
+      info "✅ gsd-core installed"
+    else
+      record_failure "gsd-core" "run manually: npx @opengsd/gsd-core@latest --install --claude --global"
+    fi
+  fi
 
-  # 5. Graphify
+  # Graphify (PyPI package is "graphifyy" — the CLI it installs is "graphify")
   if have graphify; then
     info "✅ graphify already installed"
   elif have uv; then
-    uv tool install graphify >/dev/null 2>&1 && graphify install >/dev/null 2>&1 \
-      && info "✅ graphify installed (uv)" || c_yellow "⚠️  graphify: run: uv tool install graphify && graphify install"
+    if uv tool install graphifyy >/dev/null 2>&1 && graphify install >/dev/null 2>&1; then
+      info "✅ graphify installed (uv)"
+    else
+      record_failure "graphify" "run: uv tool install graphifyy && graphify install"
+    fi
   elif have pipx; then
-    pipx install graphify >/dev/null 2>&1 && graphify install >/dev/null 2>&1 \
-      && info "✅ graphify installed (pipx)" || c_yellow "⚠️  graphify: run: pipx install graphify && graphify install"
+    if ! have python3 && ! have python; then
+      record_skipped "graphify" "pipx found but no python3/python on PATH — install Python 3 first: https://python.org"
+    elif pipx install graphifyy >/dev/null 2>&1 && graphify install >/dev/null 2>&1; then
+      info "✅ graphify installed (pipx)"
+    else
+      record_failure "graphify" "run: pipx install graphifyy && graphify install"
+    fi
   else
-    c_yellow "⚠️  graphify needs uv or pipx: https://github.com/Graphify-Labs/graphify"
+    record_skipped "graphify" "needs uv or pipx: https://github.com/Graphify-Labs/graphify"
   fi
 
-  # 6. claude-obsidian
-  install_marketplace_plugin "AgriciDaniel/claude-obsidian" "claude-obsidian@agricidaniel-claude-obsidian" "claude-obsidian"
-
-  # 7. obsidian-skills
-  install_marketplace_plugin "kepano/obsidian-skills" "obsidian@obsidian-skills" "obsidian-skills"
-
-  # 8. andrej-karpathy-skills (also baked into global CLAUDE.md as fallback)
-  install_marketplace_plugin "multica-ai/andrej-karpathy-skills" "andrej-karpathy-skills@multica-ai" "karpathy"
-
-  # 9. ui-ux-pro-max
-  install_marketplace_plugin "nextlevelbuilder/ui-ux-pro-max-skill" "ui-ux-pro-max@ui-ux-pro-max-skill" "ui-ux-pro-max"
-
-  # 10. open-design (optional — heavy)
+  # open-design (optional — heavy)
   if [ "${WITH_DESIGN:-0}" = "1" ]; then
     if [ -d "$HOME/open-design" ]; then
       info "✅ open-design already cloned (~/open-design)"
     else
-      git clone --depth 1 https://github.com/nexu-io/open-design.git "$HOME/open-design" >/dev/null 2>&1 \
-        && info "✅ open-design cloned to ~/open-design (run: cd ~/open-design && corepack enable && pnpm install)" \
-        || c_yellow "⚠️  open-design clone failed"
+      if git clone --depth 1 https://github.com/nexu-io/open-design.git "$HOME/open-design" >/dev/null 2>&1; then
+        info "✅ open-design cloned to ~/open-design (run: cd ~/open-design && corepack enable && pnpm install)"
+      else
+        record_failure "open-design" "git clone failed — retry: git clone https://github.com/nexu-io/open-design.git ~/open-design"
+      fi
     fi
   else
-    info "⏭  open-design skipped (optional; re-run with --with-design to include)"
+    record_skipped "open-design" "optional; re-run with --with-design to include"
   fi
 }
 
@@ -113,8 +166,10 @@ install_global_files(){
   echo "── Installing global router + hooks ──"
   mkdir -p "$CLAUDE_DIR/hooks" "$SS_HOME"
 
-  # Master router: merge-safe — back up existing CLAUDE.md once
-  if [ -f "$CLAUDE_DIR/CLAUDE.md" ] && ! grep -q "CLAUDE-SUPERSTACK" "$CLAUDE_DIR/CLAUDE.md"; then
+  # Master router: merge-safe — back up existing CLAUDE.md once, idempotent re-run
+  if [ -f "$CLAUDE_DIR/CLAUDE.md" ] && grep -q "CLAUDE-SUPERSTACK" "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null; then
+    info "✅ global CLAUDE.md already has SuperStack router (no change)"
+  elif [ -f "$CLAUDE_DIR/CLAUDE.md" ]; then
     cp "$CLAUDE_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md.pre-superstack.bak"
     c_yellow "  Existing global CLAUDE.md backed up → CLAUDE.md.pre-superstack.bak"
     cat "$SS_HOME/global/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md.pre-superstack.bak" > "$CLAUDE_DIR/CLAUDE.md"
@@ -124,10 +179,14 @@ install_global_files(){
     info "✅ Global CLAUDE.md (Master Router) installed"
   fi
 
-  # Hooks: install if none, else warn
-  if [ -f "$CLAUDE_DIR/hooks/hooks.json" ] && ! grep -q "SUPERSTACK MEMORY" "$CLAUDE_DIR/hooks/hooks.json"; then
-    c_yellow "⚠️  Existing hooks.json found — SuperStack hooks saved as hooks.superstack.json (merge manually)"
+  # Hooks: install if none, skip if already present (idempotent — never overwrite
+  # a file that already has SuperStack's marker, since it may be hand-merged with
+  # another tool's hooks), else warn with exact merge command.
+  if [ -f "$CLAUDE_DIR/hooks/hooks.json" ] && grep -q "SUPERSTACK MEMORY" "$CLAUDE_DIR/hooks/hooks.json" 2>/dev/null; then
+    info "✅ hooks.json already has SuperStack hooks (no change)"
+  elif [ -f "$CLAUDE_DIR/hooks/hooks.json" ]; then
     cp "$SS_HOME/global/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.superstack.json"
+    record_skipped "hooks.json" "existing hooks.json found — SuperStack hooks saved to hooks.superstack.json; merge manually: diff ~/.claude/hooks/hooks.json ~/.claude/hooks/hooks.superstack.json"
   else
     cp "$SS_HOME/global/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.json"
     info "✅ Hooks installed (SessionStart memory injection, Stop cache rotation)"
@@ -152,13 +211,64 @@ init_project_files(){
   fi
 }
 
+# ---------- shared health checks (used by doctor + install verification) ----------
+run_health_checks(){
+  local ok=0 warn=0
+  check(){ if eval "$2"; then info "✅ $1"; ok=$((ok+1)); else c_yellow "⚠️  $1 — $3"; warn=$((warn+1)); fi; }
+  check "git"        "have git"  "install git"
+  check "node"       "have node" "install Node.js 20+"
+  check "claude CLI" "have claude" "install Claude Code"
+  check "global CLAUDE.md router" "grep -q CLAUDE-SUPERSTACK '$CLAUDE_DIR/CLAUDE.md' 2>/dev/null" "run: superstack install"
+  check "hooks"      "grep -q 'SUPERSTACK MEMORY' '$CLAUDE_DIR/hooks/hooks.json' 2>/dev/null" "run: superstack install"
+  if [ -f "$CLAUDE_DIR/hooks/hooks.superstack.json" ]; then
+    c_yellow "⚠️  hooks.superstack.json is waiting to be merged — diff ~/.claude/hooks/hooks.json ~/.claude/hooks/hooks.superstack.json"
+    warn=$((warn+1))
+  fi
+  check "graphify"   "have graphify" "uv tool install graphifyy"
+  if have claude; then
+    for p in ecc superpowers ponytail claude-obsidian obsidian karpathy ui-ux-pro-max; do
+      check "plugin: $p" "claude plugin list 2>/dev/null | grep -qi '$p'" "reinstall via superstack install"
+    done
+  fi
+  check "gsd-core"   "[ -d '$CLAUDE_DIR/gsd-core' ]" "npx @opengsd/gsd-core@latest --install"
+  check "open-design (optional)" "[ -d '$HOME/open-design' ]" "superstack install --with-design"
+  echo ""
+  echo "Result: $ok OK, $warn warnings."
+}
+
+ensure_ss_home(){
+  # A prior `uninstall --all` removes $SS_HOME and the ~/.local/bin symlink
+  # entirely. Re-create both here so `install` is self-healing even when
+  # invoked directly (not via install.sh).
+  if [ ! -f "$SS_HOME/global/CLAUDE.md" ]; then
+    local repo_url="${SUPERSTACK_REPO:-https://github.com/shantosaha/claude_superstack.git}"
+    c_yellow "  SuperStack scripts missing at $SS_HOME — re-cloning from $repo_url"
+    git clone --depth 1 "$repo_url" "$SS_HOME" >/dev/null 2>&1 \
+      || record_failure "superstack scripts" "clone failed — run manually: git clone $repo_url $SS_HOME"
+  fi
+  if [ ! -e "$BIN_DIR/superstack" ]; then
+    mkdir -p "$BIN_DIR"
+    ln -sf "$SS_HOME/bin/superstack" "$BIN_DIR/superstack"
+    info "✅ relinked $BIN_DIR/superstack (was missing — is $BIN_DIR on your PATH?)"
+  fi
+}
+
 cmd_install(){
   echo "🚀 claude_superstack v$VERSION — installing"
   require_tools
+  ensure_ss_home
   install_all_repos
   install_global_files
   echo ""
-  c_green "✅ SuperStack global install complete."
+  echo "── Verifying install ──"
+  run_health_checks
+  print_summary
+  echo ""
+  if [ ${#FAILURES[@]} -eq 0 ]; then
+    c_green "✅ SuperStack install complete."
+  else
+    c_yellow "⚠️  SuperStack install finished with ${#FAILURES[@]} failure(s) — see Failures above."
+  fi
   echo "   New project:      superstack init <name>"
   echo "   Existing project: superstack migrate <path|.>"
   echo "   Health check:     superstack doctor"
@@ -188,28 +298,12 @@ cmd_migrate(){
 
 cmd_doctor(){
   echo "🩺 SuperStack doctor"
-  local ok=0 warn=0
-  check(){ if eval "$2"; then info "✅ $1"; ok=$((ok+1)); else c_yellow "⚠️  $1 — $3"; warn=$((warn+1)); fi; }
-  check "git"        "have git"  "install git"
-  check "node"       "have node" "install Node.js 20+"
-  check "claude CLI" "have claude" "install Claude Code"
-  check "global CLAUDE.md router" "grep -q CLAUDE-SUPERSTACK '$CLAUDE_DIR/CLAUDE.md' 2>/dev/null" "run: superstack install"
-  check "hooks"      "grep -q 'SUPERSTACK MEMORY' '$CLAUDE_DIR/hooks/hooks.json' 2>/dev/null || [ -f '$CLAUDE_DIR/hooks/hooks.superstack.json' ]" "run: superstack install"
-  check "graphify"   "have graphify" "uv tool install graphify"
-  if have claude; then
-    for p in ecc superpowers ponytail claude-obsidian obsidian karpathy ui-ux-pro-max; do
-      check "plugin: $p" "claude plugin list 2>/dev/null | grep -qi '$p'" "reinstall via superstack install"
-    done
-  fi
-  check "gsd-core"   "ls '$CLAUDE_DIR'/commands/gsd-* >/dev/null 2>&1 || claude plugin list 2>/dev/null | grep -qi gsd" "npx @opengsd/gsd-core@latest --install"
-  check "open-design (optional)" "[ -d '$HOME/open-design' ]" "superstack install --with-design"
+  run_health_checks
   if [ -f ".superstack.json" ]; then
     info "✅ current project is SuperStack-enabled"
   else
     c_yellow "ℹ️  current directory not initialized (superstack migrate .)"
   fi
-  echo ""
-  echo "Result: $ok OK, $warn warnings."
 }
 
 cmd_update(){
@@ -218,12 +312,13 @@ cmd_update(){
   # Plugins: marketplace update + reinstall gets latest
   if have claude; then
     claude plugin marketplace update --all >/dev/null 2>&1 || true
-    for spec in "ecc@ecc" "superpowers@superpowers-marketplace" "ponytail@ponytail" \
-                "claude-obsidian@agricidaniel-claude-obsidian" "obsidian@obsidian-skills" \
-                "andrej-karpathy-skills@multica-ai" "ui-ux-pro-max@ui-ux-pro-max-skill"; do
-      claude plugin update "$spec" >/dev/null 2>&1 \
-        || claude plugin install "$spec" >/dev/null 2>&1 \
-        && info "✅ updated $spec" || c_yellow "⚠️  could not update $spec"
+    for spec in "${PLUGIN_SPECS[@]}"; do
+      IFS='|' read -r _ pspec name <<< "$spec"
+      if claude plugin update "$pspec" >/dev/null 2>&1 || claude plugin install "$pspec" >/dev/null 2>&1; then
+        info "✅ updated $name"
+      else
+        c_yellow "⚠️  could not update $name"
+      fi
     done
   else
     c_yellow "⚠️  'claude' CLI not found — update plugins inside Claude Code (/plugin update)"
@@ -232,8 +327,8 @@ cmd_update(){
   npx --yes @opengsd/gsd-core@latest --install --claude --global >/dev/null 2>&1 \
     && info "✅ updated gsd-core" || c_yellow "⚠️  gsd-core update failed"
   # Graphify
-  if have uv; then uv tool upgrade graphify >/dev/null 2>&1 && info "✅ updated graphify"; fi
-  if have pipx; then pipx upgrade graphify >/dev/null 2>&1 || true; fi
+  if have uv; then uv tool upgrade graphifyy >/dev/null 2>&1 && info "✅ updated graphify"; fi
+  if have pipx; then pipx upgrade graphifyy >/dev/null 2>&1 || true; fi
   # ui-ux-pro-max CLI (if installed via npm)
   have uipro && npm update -g ui-ux-pro-max-cli >/dev/null 2>&1 && info "✅ updated uipro CLI"
   # open-design
@@ -249,14 +344,126 @@ cmd_update(){
   c_green "✅ Update complete. Run: superstack doctor"
 }
 
-cmd_uninstall(){
-  echo "🗑  Removing SuperStack global files (repos/plugins are left installed)"
-  read -r -p "Proceed? [y/N] " a; [ "$a" = "y" ] || { echo "Aborted."; exit 0; }
-  [ -f "$CLAUDE_DIR/CLAUDE.md.pre-superstack.bak" ] && mv "$CLAUDE_DIR/CLAUDE.md.pre-superstack.bak" "$CLAUDE_DIR/CLAUDE.md" \
-    || rm -f "$CLAUDE_DIR/CLAUDE.md"
+# ---------- uninstall ----------
+
+uninstall_router_and_hooks(){
+  # Only ever touch a CLAUDE.md that SuperStack actually owns.
+  if [ -f "$CLAUDE_DIR/CLAUDE.md" ] && grep -q "CLAUDE-SUPERSTACK" "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null; then
+    if [ -f "$CLAUDE_DIR/CLAUDE.md.pre-superstack.bak" ]; then
+      mv "$CLAUDE_DIR/CLAUDE.md.pre-superstack.bak" "$CLAUDE_DIR/CLAUDE.md"
+      info "✅ restored your original CLAUDE.md from backup"
+    else
+      # No pre-superstack backup exists — never delete without leaving a copy.
+      local ts; ts="$(date +%Y%m%d-%H%M%S)"
+      cp "$CLAUDE_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md.uninstalled-$ts"
+      rm -f "$CLAUDE_DIR/CLAUDE.md"
+      info "✅ removed SuperStack CLAUDE.md (no prior backup existed — saved a copy to CLAUDE.md.uninstalled-$ts before deleting)"
+    fi
+  else
+    info "ℹ️  global CLAUDE.md is not SuperStack's — left untouched"
+  fi
   rm -f "$CLAUDE_DIR/hooks/hooks.superstack.json"
-  grep -q "SUPERSTACK MEMORY" "$CLAUDE_DIR/hooks/hooks.json" 2>/dev/null && rm -f "$CLAUDE_DIR/hooks/hooks.json"
-  c_green "✅ SuperStack removed. Uninstall individual plugins with: claude plugin uninstall <spec>"
+  if [ -f "$CLAUDE_DIR/hooks/hooks.json" ] && grep -q "SUPERSTACK MEMORY" "$CLAUDE_DIR/hooks/hooks.json" 2>/dev/null; then
+    # Marker match doesn't guarantee this is a pure SuperStack file — it may be
+    # merged with another tool's hooks. Never delete without a copy.
+    local ts; ts="$(date +%Y%m%d-%H%M%S)"
+    cp "$CLAUDE_DIR/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.json.uninstalled-$ts"
+    rm -f "$CLAUDE_DIR/hooks/hooks.json"
+    info "✅ removed hooks.json (SuperStack marker found — saved a copy to hooks.json.uninstalled-$ts before deleting; if it was merged with another tool's hooks, restore from that copy and re-merge)"
+  fi
+}
+
+uninstall_plugins(){
+  if ! have claude; then
+    record_skipped "plugins" "claude CLI not found — nothing to uninstall via CLI"
+    return
+  fi
+  for spec in "${PLUGIN_SPECS[@]}"; do
+    IFS='|' read -r _ pspec name <<< "$spec"
+    if plugin_installed "$name"; then
+      claude plugin uninstall "$pspec" >/dev/null 2>&1 \
+        && info "✅ uninstalled $name" \
+        || record_failure "$name" "uninstall failed — run manually: claude plugin uninstall $pspec"
+    fi
+  done
+}
+
+uninstall_cli_and_repos(){
+  # Absolute, explicit paths only — never $PWD-derived, never touches project files.
+  rm -f "$BIN_DIR/superstack"
+  rm -rf "$CLAUDE_DIR/gsd-core"
+  rm -rf "$CLAUDE_DIR/gsd-migration-journal"
+  rm -f "$CLAUDE_DIR/gsd-file-manifest.json" "$CLAUDE_DIR/gsd-install-state.json"
+  rm -f "$CLAUDE_DIR"/agents/gsd-*.md 2>/dev/null
+  rm -f "$CLAUDE_DIR"/hooks/lib/gsd-*.sh "$CLAUDE_DIR"/hooks/lib/gsd-*.js 2>/dev/null
+  rm -f "$CLAUDE_DIR"/commands/gsd:*.md 2>/dev/null
+  rm -rf "$SS_HOME"
+  if have uv; then uv tool uninstall graphifyy >/dev/null 2>&1 || true; fi
+  if have pipx; then pipx uninstall graphifyy >/dev/null 2>&1 || true; fi
+  have uipro && npm uninstall -g ui-ux-pro-max-cli >/dev/null 2>&1 || true
+  info "✅ removed CLI, ~/.claude/superstack, gsd-core commands, graphify, ui-ux CLI"
+}
+
+uninstall_open_design(){
+  if [ -d "$HOME/open-design" ]; then
+    rm -rf "$HOME/open-design"
+    info "✅ removed ~/open-design"
+  else
+    info "ℹ️  ~/open-design not present — nothing to remove"
+  fi
+}
+
+cmd_uninstall(){
+  local all=0 no_confirm=0
+  for a in "$@"; do
+    case "$a" in
+      --all) all=1 ;;
+      --no-confirm) no_confirm=1 ;;
+    esac
+  done
+
+  if [ "$all" -eq 0 ]; then
+    echo "🗑  Removing SuperStack global router + hooks only"
+    read -r -p "Proceed? [y/N] " a; [ "$a" = "y" ] || { echo "Aborted."; exit 0; }
+    uninstall_router_and_hooks
+    echo ""
+    c_yellow "This does NOT remove:"
+    info "- Claude Code plugins (ecc, superpowers, ponytail, claude-obsidian, obsidian-skills, karpathy, ui-ux-pro-max)"
+    info "- gsd-core commands, graphify, ui-ux-pro-max CLI"
+    info "- ~/.claude/superstack/, ~/.local/bin/superstack"
+    info "- ~/open-design"
+    info "- any project's .vault/, .graphify/, .superstack.json, or project CLAUDE.md (never touched)"
+    echo "Run 'superstack uninstall --all' to remove everything global."
+    c_green "✅ Light uninstall complete."
+    return
+  fi
+
+  echo "🗑  Full SuperStack removal (--all)"
+  echo "This only ever touches: ~/.claude/, ~/.local/bin/, ~/open-design/"
+  echo "Project files (.vault/, .graphify/, .superstack.json, project CLAUDE.md) are never touched."
+  echo ""
+
+  confirm_category(){
+    [ "$no_confirm" -eq 1 ] && return 0
+    read -r -p "$1 [y/N] " a
+    [ "$a" = "y" ]
+  }
+
+  if confirm_category "Remove Claude Code plugins (7)?"; then uninstall_plugins; else record_skipped "plugins" "skipped by choice"; fi
+  if confirm_category "Remove CLI tools & repos (superstack CLI, gsd-core, graphify, ui-ux CLI, ~/.claude/superstack)?"; then uninstall_cli_and_repos; else record_skipped "cli-and-repos" "skipped by choice"; fi
+  if confirm_category "Remove global router + hooks?"; then uninstall_router_and_hooks; else record_skipped "router-and-hooks" "skipped by choice"; fi
+  if confirm_category "Remove ~/open-design?"; then uninstall_open_design; else record_skipped "open-design" "skipped by choice"; fi
+
+  echo ""
+  print_summary
+  echo ""
+  echo "── Post-removal check ──"
+  if have superstack; then
+    c_yellow "⚠️  'superstack' command still found on PATH (a category was likely skipped above)"
+  else
+    c_green "✅ confirmed: superstack command not found"
+  fi
+  c_green "✅ Full uninstall finished."
 }
 
 case "${1:-help}" in
@@ -265,17 +472,20 @@ case "${1:-help}" in
   migrate)   shift; cmd_migrate "${1:-.}" ;;
   doctor)    cmd_doctor ;;
   update)    cmd_update ;;
-  uninstall) cmd_uninstall ;;
+  uninstall) shift; cmd_uninstall "$@" ;;
   version)   echo "claude_superstack v$VERSION" ;;
   *) cat <<HELP
 claude_superstack v$VERSION
 Usage: superstack <command>
-  install [--with-design]  Install all 10 repos + global router + hooks
-  init <name>              Create a new SuperStack project
-  migrate [path]           Enable SuperStack on an existing project
-  doctor                   Health-check the whole stack
-  update                   Update all repos to their latest versions
-  uninstall                Remove SuperStack global files
+  install [--with-design]        Install all 10 repos + global router + hooks
+  init <name>                    Create a new SuperStack project
+  migrate [path]                 Enable SuperStack on an existing project
+  doctor                         Health-check the whole stack
+  update                         Update all repos to their latest versions
+  uninstall                      Remove global router + hooks only (repos/plugins left installed)
+  uninstall --all                Remove everything global, with a confirm prompt per category
+  uninstall --all --no-confirm   Remove everything global, no prompts
+  (Project files — .vault/, .graphify/, .superstack.json, project CLAUDE.md — are never touched by uninstall.)
 HELP
   ;;
 esac

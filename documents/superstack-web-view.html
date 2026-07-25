@@ -1402,11 +1402,11 @@ const cliOutputs = {
     "[+] SuperStack global router configuration verified."
   ],
   uninstall: [
-    "[!] Warning: This will remove the global SuperStack router.",
+    "[!] Warning: This will remove the global SuperStack router + hooks.",
     "[*] Reverting SessionStart and Stop Git hooks...",
-    "[*] Removing CLAUDE.md routers...",
-    "[-] Cleaned global configuration database.",
-    "[-] SuperStack has been successfully uninstalled from your machine."
+    "[*] Removing CLAUDE.md router...",
+    "[-] Global router + hooks removed (repos/plugins left installed).",
+    "[i] Run 'superstack uninstall --all' to remove everything global."
   ]
 };
 
@@ -1580,7 +1580,15 @@ superstack update
 </tr>
 <tr>
 <td><code>superstack uninstall</code></td>
-<td>Remove SuperStack's global files (leaves individual plugins installed)</td>
+<td>Remove SuperStack's global router + hooks (leaves individual plugins installed)</td>
+</tr>
+<tr>
+<td><code>superstack uninstall --all</code></td>
+<td>Remove everything global, with a confirm prompt per category</td>
+</tr>
+<tr>
+<td><code>superstack uninstall --all --no-confirm</code></td>
+<td>Remove everything global, no prompts</td>
 </tr>
 <tr>
 <td><code>superstack version</code></td>
@@ -3122,8 +3130,8 @@ export PONYTAIL_DISABLED=false
 <p><strong>Description:</strong> Turn any folder of code, SQL schemas, R scripts, shell scripts, docs, papers, images, or videos into a queryable knowledge graph. Maps entire projects into persistent knowledge graphs showing how code actually fits together. Supports Claude Code, Codex, OpenCode, Cursor, Gemini CLI, and more.</p>
 <h3>Installation Commands</h3>
 <pre><code class="language-bash"># Recommended: UV/Pipx
-uv tool install graphify &amp;&amp; graphify install
-pipx install graphify &amp;&amp; graphify install
+uv tool install graphifyy &amp;&amp; graphify install
+pipx install graphifyy &amp;&amp; graphify install
 
 # Then register skill
 /graphify .
@@ -4044,7 +4052,7 @@ COMPLETION
 <li>[ ] <strong>Superpowers</strong>: <code>/plugin marketplace add obra/superpowers-marketplace</code> → <code>/plugin install superpowers@superpowers-marketplace</code></li>
 <li>[ ] <strong>GSD Core</strong>: <code>npx @opengsd/gsd-core@latest --install</code></li>
 <li>[ ] <strong>Ponytail</strong>: <code>/plugin marketplace add https://github.com/DietrichGebert/ponytail</code> → <code>/plugin install ponytail@ponytail</code></li>
-<li>[ ] <strong>Graphify</strong>: <code>uv tool install graphify &amp;&amp; graphify install</code></li>
+<li>[ ] <strong>Graphify</strong>: <code>uv tool install graphifyy &amp;&amp; graphify install</code></li>
 <li>[ ] <strong>claude-obsidian</strong>: <code>git clone https://github.com/AgriciDaniel/claude-obsidian &amp;&amp; bash bin/setup-vault.sh</code></li>
 <li>[ ] <strong>obsidian-skills</strong>: <code>/plugin marketplace add kepano/obsidian-skills</code> → <code>/plugin install obsidian@obsidian-skills</code></li>
 <li>[ ] <strong>andrej-karpathy-skills</strong>: <code>/plugin marketplace add multica-ai/andrej-karpathy-skills</code></li>
@@ -4167,7 +4175,9 @@ superstack init &lt;name&gt;               Creates a new SuperStack-enabled proj
 superstack migrate &lt;path&gt;            Adds SuperStack to an existing project
 superstack doctor                    Health-checks the entire stack
 superstack update                    Pulls the latest version of all 10 repos
-superstack uninstall                 Removes SuperStack's global files
+superstack uninstall                 Removes global router + hooks (repos/plugins left installed)
+superstack uninstall --all           Removes everything global, confirm prompt per category
+superstack uninstall --all --no-confirm  Removes everything global, no prompts
 superstack version                   Prints the version number
 </code></pre>
 <p>Each subcommand is a shell function inside one script — there's no separate
