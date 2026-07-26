@@ -191,6 +191,25 @@ install_global_files(){
     cp "$SS_HOME/global/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.json"
     info "✅ Hooks installed (SessionStart memory injection, Stop cache rotation)"
   fi
+
+  # Slash commands (/skip, /ponytail, /superstack-status, /save): copy any
+  # missing ones, never overwrite a file the user already has by that name.
+  mkdir -p "$CLAUDE_DIR/commands"
+  local cmd_installed=0 cmd_skipped=0
+  for f in "$SS_HOME/global/commands/"*.md; do
+    local name; name="$(basename "$f")"
+    if [ -f "$CLAUDE_DIR/commands/$name" ]; then
+      cmd_skipped=$((cmd_skipped+1))
+    else
+      cp "$f" "$CLAUDE_DIR/commands/$name"
+      cmd_installed=$((cmd_installed+1))
+    fi
+  done
+  if [ "$cmd_skipped" -eq 0 ]; then
+    info "✅ SuperStack slash commands installed ($cmd_installed)"
+  else
+    info "✅ SuperStack slash commands: $cmd_installed installed, $cmd_skipped already present (untouched)"
+  fi
 }
 
 init_project_files(){
@@ -220,6 +239,7 @@ run_health_checks(){
   check "claude CLI" "have claude" "install Claude Code"
   check "global CLAUDE.md router" "grep -q CLAUDE-SUPERSTACK '$CLAUDE_DIR/CLAUDE.md' 2>/dev/null" "run: superstack install"
   check "hooks"      "grep -q 'SUPERSTACK MEMORY' '$CLAUDE_DIR/hooks/hooks.json' 2>/dev/null" "run: superstack install"
+  check "slash commands" "[ -f '$CLAUDE_DIR/commands/superstack-status.md' ]" "run: superstack install"
   if [ -f "$CLAUDE_DIR/hooks/hooks.superstack.json" ]; then
     c_yellow "⚠️  hooks.superstack.json is waiting to be merged — diff ~/.claude/hooks/hooks.json ~/.claude/hooks/hooks.superstack.json"
     warn=$((warn+1))
