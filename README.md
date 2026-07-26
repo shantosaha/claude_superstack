@@ -34,7 +34,7 @@ Turns Claude Code into an integrated, memory-backed, self-optimizing dev environ
 | **Integrated Frameworks** | `10` | Unified Claude Code extensions |
 | **Automation Scripts** | `4 files` (896 lines) | Core installation & orchestration |
 | **Documentation Assets** | `6 guides` | Deep-dives, manuals, and schemas |
-| **Last Auto-Updated** | `2026-07-25` | Triggered by latest repository push |
+| **Last Auto-Updated** | `2026-07-26` | Triggered by latest repository push |
 <!-- STATS_END -->
 
 ## Feature & Compatibility Matrix
