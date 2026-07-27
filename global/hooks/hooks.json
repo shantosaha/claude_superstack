@@ -11,6 +11,29 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/hooks/superstack-turn-report.js\" snapshot 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/hooks/superstack-turn-report.js\" track 2>/dev/null || true",
+            "async": true
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "*",
@@ -18,6 +41,15 @@
           {
             "type": "command",
             "command": "bash -c 'V=\"$CLAUDE_PROJECT_DIR/.vault\"; if [ -d \"$V\" ] && [ -f \"$V/hot.md\" ]; then tail -n 50 \"$V/hot.md\" > \"$V/.hot.tmp\" && mv \"$V/.hot.tmp\" \"$V/hot.md\"; fi' 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/hooks/superstack-turn-report.js\" report 2>/dev/null || true"
           }
         ]
       }

@@ -192,6 +192,11 @@ install_global_files(){
     info "✅ Hooks installed (SessionStart memory injection, Stop cache rotation)"
   fi
 
+  # Turn-report script: always sync (logic file, not user-edited data) — copy
+  # unconditionally so hook upgrades land even if hooks.json was already present.
+  cp "$SS_HOME/global/hooks/superstack-turn-report.js" "$CLAUDE_DIR/hooks/superstack-turn-report.js"
+  info "✅ Turn-report script installed"
+
   # Slash commands (/skip, /ponytail, /superstack-status, /save): copy any
   # missing ones, never overwrite a file the user already has by that name.
   mkdir -p "$CLAUDE_DIR/commands"
@@ -240,6 +245,7 @@ run_health_checks(){
   check "global CLAUDE.md router" "grep -q CLAUDE-SUPERSTACK '$CLAUDE_DIR/CLAUDE.md' 2>/dev/null" "run: superstack install"
   check "hooks"      "grep -q 'SUPERSTACK MEMORY' '$CLAUDE_DIR/hooks/hooks.json' 2>/dev/null" "run: superstack install"
   check "slash commands" "[ -f '$CLAUDE_DIR/commands/superstack-status.md' ]" "run: superstack install"
+  check "turn report script" "[ -f '$CLAUDE_DIR/hooks/superstack-turn-report.js' ]" "run: superstack install"
   if [ -f "$CLAUDE_DIR/hooks/hooks.superstack.json" ]; then
     c_yellow "⚠️  hooks.superstack.json is waiting to be merged — diff ~/.claude/hooks/hooks.json ~/.claude/hooks/hooks.superstack.json"
     warn=$((warn+1))

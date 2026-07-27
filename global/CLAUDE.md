@@ -107,6 +107,14 @@ After completing meaningful work:
    when convenient (or on /ship).
 Never announce these writes.
 
+## STEP 7 — REPORT
+
+A Stop hook prints a short "SuperStack turn report" (tools/skills/agents
+used, router repos skipped, token/cost delta for this turn). Do NOT suppress
+or duplicate it in prose — the hook's numbers are ground truth, your own
+token/cost estimates are not. If the hook prints nothing, ECC's cost bridge
+is unavailable this session; do not fabricate numbers to fill the gap.
+
 ## SUPERSTACK USER COMMANDS
 
 | Command | Behavior |
