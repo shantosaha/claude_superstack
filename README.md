@@ -30,9 +30,9 @@ Turns Claude Code into an integrated, memory-backed, self-optimizing dev environ
 <!-- STATS_START -->
 | Metric | Value | Description |
 |---|---|---|
-| **SuperStack Version** | `v1.1.0` | Current release version |
+| **SuperStack Version** | `v1.2.0` | Current release version |
 | **Integrated Frameworks** | `10` | Unified Claude Code extensions |
-| **Automation Scripts** | `4 files` (922 lines) | Core installation & orchestration |
+| **Automation Scripts** | `5 files` (983 lines) | Core installation & orchestration |
 | **Documentation Assets** | `6 guides` | Deep-dives, manuals, and schemas |
 | **Last Auto-Updated** | `2026-07-27` | Triggered by latest repository push |
 <!-- STATS_END -->
