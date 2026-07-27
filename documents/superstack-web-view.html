@@ -481,8 +481,8 @@ no automatic token/code minimalism).</p>
           <div class="d">The Master Router — read every session, followed on every prompt</div>
         </div>
         <div class="node">
-          <div class="t">hooks/hooks.json</div>
-          <div class="d">SessionStart memory injection · Stop cache rotation</div>
+          <div class="t">hooks/superstack-turn-report.js</div>
+          <div class="d">Per-turn logic — registered into settings.json below, not read directly</div>
         </div>
         <div class="node">
           <div class="t">plugins/</div>
@@ -557,7 +557,7 @@ no automatic token/code minimalism).</p>
     │   └── superstack.ps1                   ← CLI (Windows)
     ├── global/
     │   ├── CLAUDE.md                        ← source copy of the router
-    │   └── hooks/hooks.json                 ← source copy of hooks
+    │   └── hooks/hooks.json                 ← source template, merged into ~/.claude/settings.json at install (never read directly)
     └── templates/                           ← copied into every new project
         ├── CLAUDE.project.md
         ├── superstack.json
@@ -725,7 +725,9 @@ Claude Code with SuperStack active.</p>
                     ▼
 ┌───────────────────────────────────────────────────────────────┐
 │ (Only on session start, not every prompt)                      │
-│ SessionStart HOOK fires automatically:                         │
+│ SessionStart HOOK fires automatically (registered in ~/.claude│
+│ /settings.json — NOT ~/.claude/hooks/hooks.json, which is only│
+│ a source template merged in at install time):                 │
 │   • cat .vault/hot.md        → recent context, 0 tokens        │
 │   • cat .vault/index.md      → what topics exist, 0 tokens     │
 │ This is injected into Claude's context before you even type.   │
@@ -809,6 +811,10 @@ Claude Code with SuperStack active.</p>
 ┌───────────────────────────────────────────────────────────────┐
 │ Stop HOOK fires automatically:                                   │
 │   • Trims hot.md to the last ~50 lines (keeps it small)           │
+│   • Turn-report script emits a one-line summary as a             │
+│     `systemMessage` — Stop hooks discard stderr and reject the   │
+│     additionalContext envelope, so systemMessage on stdout is    │
+│     the only channel that reaches you                            │
 └───────────────────────────────────────────────────────────────┘
 </code></pre>
 <hr />
@@ -964,8 +970,14 @@ Sub-agents used:      only if the feature is large enough to parallelize
 <hr />
 <h2 id="sec-hooks">Hooks: The Automation Layer</h2>
 <p>Hooks are the only genuinely deterministic (code, not judgment) part of
-SuperStack. They live in <code>~/.claude/hooks/hooks.json</code> and run automatically —
+SuperStack. They are registered in <code>~/.claude/settings.json</code> — the only
+location Claude Code reads user-level hooks from — and run automatically;
 Claude doesn't decide whether to run them, the Claude Code runtime does.</p>
+<p><code>~/.claude/hooks/hooks.json</code> is <strong>not</strong> a real hook-config location. It's
+only SuperStack's source template, merged into <code>settings.json</code> by
+<code>superstack install</code> (via <code>global/hooks/merge-hooks.js</code>, append-only and
+idempotent, since <code>settings.json</code> is shared with other tools). SuperStack
+&le;1.1.0 wrote hooks directly to that dead path and they never fired.</p>
 <pre><code class="language-json">SessionStart  → runs when you open a project in Claude Code
                 cats .vault/hot.md and .vault/index.md into context
                 (this is the &quot;silent memory injection&quot; from Step 1)
