@@ -193,12 +193,12 @@ sequenceDiagram
     Quality-->>User: Return verified output & save state
 ```
 
-1. **Silent memory injection** — `.vault/hot.md` + graphify graph loaded via SessionStart hook (0 tokens, file reads)
+1. **Silent memory injection** — `.vault/hot.md` + graphify graph loaded via a SessionStart hook registered in `~/.claude/settings.json` (0 tokens, file reads)
 2. **Always-on discipline** — Karpathy guidelines + auto-leveled Ponytail
 3. **Intent routing** — your prompt is matched to the right tool chain (plan → design → execute → review)
 4. **Preview + confirm** — one line per command before running. `/skip` skips it for that prompt (never for heavy/destructive tasks: >10 files or deletions always confirm)
 5. **Execute** — the chain runs with ECC quality gates
-6. **Silent memory write** — hot cache + graph updated on session Stop
+6. **Silent memory write** — hot cache trimmed on session Stop; a one-line turn report shows what ran and what it cost
 
 ## In-chat commands
 

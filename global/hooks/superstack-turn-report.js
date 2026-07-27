@@ -96,9 +96,10 @@ function cmdReport(input) {
     (repo) => !used.some((t) => t.includes(repo))
   );
 
-  const lines = ['── SuperStack turn report ──'];
-  lines.push(`used: ${used.length ? used.join(', ') : 'none'}`);
-  lines.push(`skipped: ${skipped.length ? skipped.join(', ') : 'none'}`);
+  const segs = [
+    `used ${used.length ? used.join(', ') : 'none'}`,
+    `skipped ${skipped.length}/${REFERENCE_REPOS.length}`,
+  ];
 
   if (
     bridge &&
@@ -108,11 +109,15 @@ function cmdReport(input) {
     const dCost = bridge.total_cost_usd - state.cost0;
     const dIn = (bridge.total_input_tokens || 0) - (state.in0 || 0);
     const dOut = (bridge.total_output_tokens || 0) - (state.out0 || 0);
-    lines.push(`Δ this turn: ~$${dCost.toFixed(4)} (${dIn}in/${dOut}out tok)`);
+    // No fake $0.00 when the ECC bridge is absent — a missing plugin must not
+    // read as a free turn, so the segment is omitted entirely instead.
+    segs.push(`Δ ~$${dCost.toFixed(4)} (${dIn}in/${dOut}out tok)`);
   }
 
-  console.error(lines.join('\n'));
+  // Unlink before returning so a throw while building the string still cleans up.
   try { fs.unlinkSync(sp); } catch {}
+  if (!used.length && segs.length === 2) return null; // nothing ran, no cost data
+  return `SuperStack: ${segs.join(' | ')}`;
 }
 
 function run() {
@@ -121,7 +126,13 @@ function run() {
   try {
     if (mode === 'snapshot') cmdSnapshot(input);
     else if (mode === 'track') cmdTrack(input);
-    else if (mode === 'report') cmdReport(input);
+    else if (mode === 'report') {
+      // Stop hooks: stderr is discarded at exit 0, plain stdout goes only to the
+      // debug log, and hookSpecificOutput.additionalContext is REJECTED on Stop.
+      // A top-level systemMessage on stdout is the only human-visible channel.
+      const msg = cmdReport(input);
+      if (msg) process.stdout.write(JSON.stringify({ systemMessage: msg }));
+    }
   } catch {
     // never block or error out the session
   }
@@ -148,6 +159,25 @@ function selftest() {
     const skipped = REFERENCE_REPOS.filter((r) => !state.tools.some((t) => t.includes(r)));
     assert.ok(skipped.includes('graphify'));
     assert.ok(!skipped.includes('ponytail'));
+
+    // Report must be exactly one line — systemMessage renders as a single-line banner.
+    const msg = cmdReport({ session_id: sid });
+    assert.ok(!/\n/.test(msg), 'report must be exactly one line');
+    assert.strictEqual(msg, 'SuperStack: used skill:ponytail | skipped 9/10 | Δ ~$0.0200 (50in/30out tok)');
+    const env = JSON.parse(JSON.stringify({ systemMessage: msg }));
+    assert.strictEqual(typeof env.systemMessage, 'string');
+    assert.ok(!('hookSpecificOutput' in env), 'additionalContext/hookSpecificOutput is invalid on Stop');
+
+    // Bridge absent -> omit the Δ segment entirely, never fake $0.00.
+    writeJsonAtomic(bridgePath(sid), { total_cost_usd: 1, total_input_tokens: 100, total_output_tokens: 50 });
+    cmdSnapshot({ session_id: sid });
+    cmdTrack({ session_id: sid, tool_name: 'Skill', tool_input: { skill: 'ponytail' } });
+    fs.unlinkSync(bridgePath(sid));
+    assert.strictEqual(cmdReport({ session_id: sid }), 'SuperStack: used skill:ponytail | skipped 9/10');
+
+    // Nothing ran and no cost data -> stay silent rather than show an empty banner.
+    cmdSnapshot({ session_id: sid });
+    assert.strictEqual(cmdReport({ session_id: sid }), null);
   } finally {
     os.tmpdir = origTmpdir;
     fs.rmSync(tmp, { recursive: true, force: true });

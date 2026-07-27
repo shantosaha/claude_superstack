@@ -121,7 +121,7 @@ Everything SuperStack installs globally lives under `~/.claude/`:
 │   (this is the "brain" — see Section 5)
 │
 ├── hooks/
-│   └── hooks.json                           ← SessionStart + Stop automation
+│   └── superstack-turn-report.js            ← per-turn logic (registered via settings.json below)
 │
 ├── plugins/                                 ← installed by `claude plugin install`
 │   ├── ecc/
@@ -143,7 +143,7 @@ Everything SuperStack installs globally lives under `~/.claude/`:
     │   └── superstack.ps1                   ← CLI (Windows)
     ├── global/
     │   ├── CLAUDE.md                        ← source copy of the router
-    │   └── hooks/hooks.json                 ← source copy of hooks
+    │   └── hooks/hooks.json                 ← source template, merged into ~/.claude/settings.json at install (never read directly)
     └── templates/                           ← copied into every new project
         ├── CLAUDE.project.md
         ├── superstack.json
@@ -237,7 +237,9 @@ Claude Code with SuperStack active.
                     ▼
 ┌───────────────────────────────────────────────────────────────┐
 │ (Only on session start, not every prompt)                      │
-│ SessionStart HOOK fires automatically:                         │
+│ SessionStart HOOK fires automatically (registered in ~/.claude│
+│ /settings.json — NOT ~/.claude/hooks/hooks.json, which is only│
+│ a source template merged in at install time):                 │
 │   • cat .vault/hot.md        → recent context, 0 tokens        │
 │   • cat .vault/index.md      → what topics exist, 0 tokens     │
 │ This is injected into Claude's context before you even type.   │
@@ -321,6 +323,10 @@ Claude Code with SuperStack active.
 ┌───────────────────────────────────────────────────────────────┐
 │ Stop HOOK fires automatically:                                   │
 │   • Trims hot.md to the last ~50 lines (keeps it small)           │
+│   • Turn-report script emits a one-line summary as a             │
+│     `systemMessage` — Stop hooks discard stderr and reject the   │
+│     additionalContext envelope, so systemMessage on stdout is    │
+│     the only channel that reaches you                            │
 └───────────────────────────────────────────────────────────────┘
 ```
 
@@ -484,8 +490,15 @@ Sub-agents used:      only if the feature is large enough to parallelize
 ## 11. Hooks: The Automation Layer
 
 Hooks are the only genuinely deterministic (code, not judgment) part of
-SuperStack. They live in `~/.claude/hooks/hooks.json` and run automatically —
+SuperStack. They are registered in `~/.claude/settings.json` — the only
+location Claude Code reads user-level hooks from — and run automatically;
 Claude doesn't decide whether to run them, the Claude Code runtime does.
+
+`~/.claude/hooks/hooks.json` is **not** a real hook-config location. It's
+only SuperStack's source template, merged into `settings.json` by
+`superstack install` (via `global/hooks/merge-hooks.js`, append-only and
+idempotent, since `settings.json` is shared with other tools). SuperStack
+≤1.1.0 wrote hooks directly to that dead path and they never fired.
 
 ```json
 SessionStart  → runs when you open a project in Claude Code
@@ -569,7 +582,8 @@ this script to `~/.claude/superstack/`, links it onto your PATH, then calls
       → if no, install from its official GitHub/npm/plugin source
    c. Copies the global CLAUDE.md router into ~/.claude/CLAUDE.md
       → if one already exists, backs it up first, then merges
-   d. Copies hooks.json into ~/.claude/hooks/
+   d. Merges hooks.json into ~/.claude/settings.json (append-only,
+      idempotent, backs up settings.json first)
 5. Prints next steps: `superstack init <name>` or `superstack doctor`
 ```
 
@@ -605,7 +619,9 @@ affect the global tools, never your project memory.
 | File | Location | Purpose |
 |---|---|---|
 | `CLAUDE.md` | `~/.claude/` (global) | The Master Router — read every session |
-| `hooks.json` | `~/.claude/hooks/` | SessionStart memory load + Stop cache trim |
+| `hooks.json` | `~/.claude/superstack/global/hooks/` | Source template, merged into `settings.json` (never read directly) |
+| `superstack-turn-report.js` | `~/.claude/hooks/` | Per-turn tool/skill/cost tracking, invoked by the merged hooks |
+| `settings.json` (hooks key) | `~/.claude/` | Where hooks actually run from — SessionStart memory load + Stop cache trim + turn report |
 | `superstack` | `~/.claude/superstack/bin/` | The CLI tool (Mac/Linux) |
 | `superstack.ps1` | `~/.claude/superstack/bin/` | The CLI tool (Windows) |
 | `CLAUDE.project.md` | `templates/` | Copied as `CLAUDE.md` into every new project |

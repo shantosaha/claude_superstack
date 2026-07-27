@@ -5,7 +5,7 @@ set -uo pipefail
 SS_HOME="${SUPERSTACK_HOME:-$HOME/.claude/superstack}"
 CLAUDE_DIR="$HOME/.claude"
 BIN_DIR="$HOME/.local/bin"
-VERSION="1.1.0"
+VERSION="1.2.0"
 
 c_green(){ printf "\033[32m%s\033[0m\n" "$*"; }
 c_yellow(){ printf "\033[33m%s\033[0m\n" "$*"; }
@@ -179,23 +179,31 @@ install_global_files(){
     info "✅ Global CLAUDE.md (Master Router) installed"
   fi
 
-  # Hooks: install if none, skip if already present (idempotent — never overwrite
-  # a file that already has SuperStack's marker, since it may be hand-merged with
-  # another tool's hooks), else warn with exact merge command.
-  if [ -f "$CLAUDE_DIR/hooks/hooks.json" ] && grep -q "SUPERSTACK MEMORY" "$CLAUDE_DIR/hooks/hooks.json" 2>/dev/null; then
-    info "✅ hooks.json already has SuperStack hooks (no change)"
-  elif [ -f "$CLAUDE_DIR/hooks/hooks.json" ]; then
-    cp "$SS_HOME/global/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.superstack.json"
-    record_skipped "hooks.json" "existing hooks.json found — SuperStack hooks saved to hooks.superstack.json; merge manually: diff ~/.claude/hooks/hooks.json ~/.claude/hooks/hooks.superstack.json"
+  # Logic files: always sync (not user-edited data) — copy unconditionally.
+  cp "$SS_HOME/global/hooks/superstack-turn-report.js" "$CLAUDE_DIR/hooks/superstack-turn-report.js"
+  cp "$SS_HOME/global/hooks/merge-hooks.js" "$CLAUDE_DIR/hooks/merge-hooks.js"
+  info "✅ Turn-report + merge-hooks scripts installed"
+
+  # Hooks must be registered in ~/.claude/settings.json — Claude Code never reads
+  # ~/.claude/hooks/hooks.json (that path is not a valid hook location; SuperStack
+  # <=1.1.0 wrote there and its hooks never fired). Merge is append-only,
+  # idempotent, and backs up settings.json before any write.
+  if node "$CLAUDE_DIR/hooks/merge-hooks.js" install \
+       "$SS_HOME/global/hooks/hooks.json" "$CLAUDE_DIR/settings.json"; then
+    info "✅ Hooks registered in ~/.claude/settings.json (memory inject, turn report, cache trim)"
   else
-    cp "$SS_HOME/global/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.json"
-    info "✅ Hooks installed (SessionStart memory injection, Stop cache rotation)"
+    record_skipped "hooks" "could not merge into ~/.claude/settings.json — see message above; hooks will NOT fire until fixed"
   fi
 
-  # Turn-report script: always sync (logic file, not user-edited data) — copy
-  # unconditionally so hook upgrades land even if hooks.json was already present.
-  cp "$SS_HOME/global/hooks/superstack-turn-report.js" "$CLAUDE_DIR/hooks/superstack-turn-report.js"
-  info "✅ Turn-report script installed"
+  # Migration: retire artifacts of the pre-1.2.0 installer, which wrote hooks to a
+  # path Claude Code never reads. Harmless to remove — they were never active.
+  for dead in "$CLAUDE_DIR/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.superstack.json"; do
+    if [ -f "$dead" ] && grep -q "SUPERSTACK MEMORY" "$dead" 2>/dev/null; then
+      mv "$dead" "$dead.dead-pre-1.2.0"
+      info "ℹ️  retired inert $(basename "$dead") (never loaded by Claude Code) → $(basename "$dead").dead-pre-1.2.0"
+    fi
+  done
+  rm -f "$CLAUDE_DIR"/hooks/hooks.json.uninstalled-*
 
   # Slash commands (/skip, /ponytail, /superstack-status, /save): copy any
   # missing ones, never overwrite a file the user already has by that name.
@@ -243,12 +251,12 @@ run_health_checks(){
   check "node"       "have node" "install Node.js 20+"
   check "claude CLI" "have claude" "install Claude Code"
   check "global CLAUDE.md router" "grep -q CLAUDE-SUPERSTACK '$CLAUDE_DIR/CLAUDE.md' 2>/dev/null" "run: superstack install"
-  check "hooks"      "grep -q 'SUPERSTACK MEMORY' '$CLAUDE_DIR/hooks/hooks.json' 2>/dev/null" "run: superstack install"
+  check "settings.json parses" "node -e 'JSON.parse(require(\"fs\").readFileSync(process.argv[1],\"utf8\"))' '$CLAUDE_DIR/settings.json' 2>/dev/null" "~/.claude/settings.json is malformed — fix by hand; hooks cannot load"
+  check "hooks registered in settings.json (5)" "[ \"\$(node -e 'const s=JSON.parse(require(\"fs\").readFileSync(process.argv[1],\"utf8\"));let n=0;for(const g of Object.values(s.hooks||{}).flat())for(const h of (g.hooks||[]))if(String(h.command||\"\").includes(\"SUPERSTACK-HOOK\"))n++;console.log(n)' '$CLAUDE_DIR/settings.json' 2>/dev/null)\" = 5 ]" "run: superstack install"
   check "slash commands" "[ -f '$CLAUDE_DIR/commands/superstack-status.md' ]" "run: superstack install"
   check "turn report script" "[ -f '$CLAUDE_DIR/hooks/superstack-turn-report.js' ]" "run: superstack install"
-  if [ -f "$CLAUDE_DIR/hooks/hooks.superstack.json" ]; then
-    c_yellow "⚠️  hooks.superstack.json is waiting to be merged — diff ~/.claude/hooks/hooks.json ~/.claude/hooks/hooks.superstack.json"
-    warn=$((warn+1))
+  if [ -f "$CLAUDE_DIR/hooks/hooks.json.dead-pre-1.2.0" ]; then
+    info "ℹ️  ~/.claude/hooks/hooks.json.dead-pre-1.2.0 is inert leftover from an old install — safe to delete"
   fi
   check "graphify"   "have graphify" "uv tool install graphifyy"
   if have claude; then
@@ -388,14 +396,25 @@ uninstall_router_and_hooks(){
   else
     info "ℹ️  global CLAUDE.md is not SuperStack's — left untouched"
   fi
-  rm -f "$CLAUDE_DIR/hooks/hooks.superstack.json"
+  # De-register from settings.json — strips ONLY entries tagged SUPERSTACK-HOOK,
+  # leaving pixel-agents / GSD / any other tool's hooks byte-intact. The helper
+  # backs up settings.json itself before writing.
+  if [ -f "$CLAUDE_DIR/settings.json" ] && [ -f "$CLAUDE_DIR/hooks/merge-hooks.js" ]; then
+    if node "$CLAUDE_DIR/hooks/merge-hooks.js" uninstall "$CLAUDE_DIR/settings.json"; then
+      info "✅ SuperStack hooks de-registered from ~/.claude/settings.json"
+    else
+      c_yellow "⚠️  could not edit ~/.claude/settings.json — remove SUPERSTACK-HOOK entries by hand"
+    fi
+  fi
+  rm -f "$CLAUDE_DIR/hooks/superstack-turn-report.js" "$CLAUDE_DIR/hooks/merge-hooks.js"
+  # Inert legacy artifacts (never loaded by Claude Code) — provably never read,
+  # so there is nothing to restore; no backup ceremony needed.
+  rm -f "$CLAUDE_DIR/hooks/hooks.superstack.json" \
+        "$CLAUDE_DIR/hooks/hooks.json.dead-pre-1.2.0" \
+        "$CLAUDE_DIR"/hooks/hooks.json.uninstalled-*
   if [ -f "$CLAUDE_DIR/hooks/hooks.json" ] && grep -q "SUPERSTACK MEMORY" "$CLAUDE_DIR/hooks/hooks.json" 2>/dev/null; then
-    # Marker match doesn't guarantee this is a pure SuperStack file — it may be
-    # merged with another tool's hooks. Never delete without a copy.
-    local ts; ts="$(date +%Y%m%d-%H%M%S)"
-    cp "$CLAUDE_DIR/hooks/hooks.json" "$CLAUDE_DIR/hooks/hooks.json.uninstalled-$ts"
     rm -f "$CLAUDE_DIR/hooks/hooks.json"
-    info "✅ removed hooks.json (SuperStack marker found — saved a copy to hooks.json.uninstalled-$ts before deleting; if it was merged with another tool's hooks, restore from that copy and re-merge)"
+    info "✅ removed inert legacy hooks/hooks.json (never loaded by Claude Code)"
   fi
 }
 
