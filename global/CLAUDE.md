@@ -109,11 +109,14 @@ Never announce these writes.
 
 ## STEP 7 — REPORT
 
-A Stop hook prints a short "SuperStack turn report" (tools/skills/agents
-used, router repos skipped, token/cost delta for this turn). Do NOT suppress
-or duplicate it in prose — the hook's numbers are ground truth, your own
-token/cost estimates are not. If the hook prints nothing, ECC's cost bridge
-is unavailable this session; do not fabricate numbers to fill the gap.
+A Stop hook shows a one-line "SuperStack: used ... | skipped n/10 | Δ ..."
+banner (tools/skills/agents used, router repos skipped, token/cost delta for
+this turn). Do NOT suppress or duplicate it in prose — the hook's numbers are
+ground truth, your own token/cost estimates are not. If the hook prints
+nothing, ECC's cost bridge is unavailable this session; do not fabricate
+numbers to fill the gap. Full per-turn detail (same data, no line-length
+limit) is also logged as a Markdown table in `.vault/turn-log.md` for
+projects that are SuperStack-initialized.
 
 ## SUPERSTACK USER COMMANDS
 

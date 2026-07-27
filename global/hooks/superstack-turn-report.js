@@ -83,6 +83,35 @@ function cmdTrack(input) {
   writeJsonAtomic(statePath(sessionId), state);
 }
 
+// Full detail has no truncation constraint, unlike the live systemMessage
+// banner, so it gets a proper Markdown table — one row per turn, header
+// written once. Silently no-ops in projects that aren't SuperStack-
+// initialized (no .vault/), matching the existing vault-hook convention.
+function appendTurnLog(usedList, skippedCount, totalRepos, dCost, dIn, dOut) {
+  const projectDir = process.env.CLAUDE_PROJECT_DIR;
+  if (!projectDir) return;
+  const vaultDir = path.join(projectDir, '.vault');
+  if (!fs.existsSync(vaultDir)) return;
+  const logPath = path.join(vaultDir, 'turn-log.md');
+  const time = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  const usedStr = usedList.length ? usedList.join(', ') : 'none';
+  const costStr = dCost === null ? '—' : `$${dCost.toFixed(4)}`;
+  const tokStr = dCost === null ? '—' : `${dIn}in/${dOut}out`;
+  const row = `| ${time} | ${usedStr} | ${skippedCount}/${totalRepos} | ${costStr} | ${tokStr} |\n`;
+  try {
+    if (!fs.existsSync(logPath)) {
+      fs.writeFileSync(
+        logPath,
+        '# SuperStack Turn Log\n\n| Time | Used | Skipped | Cost | Tokens |\n|---|---|---|---|---|\n' + row
+      );
+    } else {
+      fs.appendFileSync(logPath, row);
+    }
+  } catch {
+    // never block the session over a log-write failure
+  }
+}
+
 function cmdReport(input) {
   const sessionId = input.session_id;
   if (!sessionId) return;
@@ -101,18 +130,21 @@ function cmdReport(input) {
     `skipped ${skipped.length}/${REFERENCE_REPOS.length}`,
   ];
 
+  let dCost = null, dIn = null, dOut = null;
   if (
     bridge &&
     state.cost0 !== null &&
     typeof bridge.total_cost_usd === 'number'
   ) {
-    const dCost = bridge.total_cost_usd - state.cost0;
-    const dIn = (bridge.total_input_tokens || 0) - (state.in0 || 0);
-    const dOut = (bridge.total_output_tokens || 0) - (state.out0 || 0);
+    dCost = bridge.total_cost_usd - state.cost0;
+    dIn = (bridge.total_input_tokens || 0) - (state.in0 || 0);
+    dOut = (bridge.total_output_tokens || 0) - (state.out0 || 0);
     // No fake $0.00 when the ECC bridge is absent — a missing plugin must not
     // read as a free turn, so the segment is omitted entirely instead.
     segs.push(`Δ ~$${dCost.toFixed(4)} (${dIn}in/${dOut}out tok)`);
   }
+
+  appendTurnLog(used, skipped.length, REFERENCE_REPOS.length, dCost, dIn, dOut);
 
   // Unlink before returning so a throw while building the string still cleans up.
   try { fs.unlinkSync(sp); } catch {}
@@ -178,6 +210,43 @@ function selftest() {
     // Nothing ran and no cost data -> stay silent rather than show an empty banner.
     cmdSnapshot({ session_id: sid });
     assert.strictEqual(cmdReport({ session_id: sid }), null);
+
+    // Turn log: table with header written once, rows appended after.
+    const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ss-turn-project-'));
+    fs.mkdirSync(path.join(projectDir, '.vault'));
+    const origProjectDir = process.env.CLAUDE_PROJECT_DIR;
+    process.env.CLAUDE_PROJECT_DIR = projectDir;
+    try {
+      writeJsonAtomic(bridgePath(sid), { total_cost_usd: 1, total_input_tokens: 100, total_output_tokens: 50 });
+      cmdSnapshot({ session_id: sid });
+      cmdTrack({ session_id: sid, tool_name: 'Skill', tool_input: { skill: 'ponytail' } });
+      writeJsonAtomic(bridgePath(sid), { total_cost_usd: 1.02, total_input_tokens: 150, total_output_tokens: 80 });
+      cmdReport({ session_id: sid });
+      const logPath = path.join(projectDir, '.vault', 'turn-log.md');
+      const afterFirst = fs.readFileSync(logPath, 'utf8');
+      assert.match(afterFirst, /^# SuperStack Turn Log\n\n\| Time \| Used \| Skipped \| Cost \| Tokens \|\n\|---\|---\|---\|---\|---\|\n\| .+ \| skill:ponytail \| 9\/10 \| \$0\.0200 \| 50in\/30out \|\n$/);
+
+      // Second turn appends a row without rewriting the header.
+      cmdSnapshot({ session_id: sid });
+      cmdReport({ session_id: sid });
+      const afterSecond = fs.readFileSync(logPath, 'utf8');
+      assert.strictEqual((afterSecond.match(/^# SuperStack Turn Log$/gm) || []).length, 1, 'header written only once');
+      const dataRows = afterSecond.split('\n').filter((l) => l.startsWith('| ') && !l.startsWith('| Time'));
+      assert.strictEqual(dataRows.length, 2, 'two data rows after two turns');
+
+      // No .vault/ -> silently no-op, no crash.
+      const bareDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ss-turn-bare-'));
+      process.env.CLAUDE_PROJECT_DIR = bareDir;
+      cmdSnapshot({ session_id: sid });
+      cmdTrack({ session_id: sid, tool_name: 'Skill', tool_input: { skill: 'ponytail' } });
+      cmdReport({ session_id: sid });
+      assert.ok(!fs.existsSync(path.join(bareDir, '.vault')), 'must not create .vault/ itself');
+      fs.rmSync(bareDir, { recursive: true, force: true });
+    } finally {
+      if (origProjectDir === undefined) delete process.env.CLAUDE_PROJECT_DIR;
+      else process.env.CLAUDE_PROJECT_DIR = origProjectDir;
+      fs.rmSync(projectDir, { recursive: true, force: true });
+    }
   } finally {
     os.tmpdir = origTmpdir;
     fs.rmSync(tmp, { recursive: true, force: true });
