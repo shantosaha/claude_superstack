@@ -13,6 +13,9 @@ node global/hooks/merge-hooks.js --selftest
 echo "== superstack-turn-report.js selftest =="
 node global/hooks/superstack-turn-report.js --selftest
 
+echo "== superstack-route-guard.js selftest =="
+node global/hooks/superstack-route-guard.js --selftest
+
 echo "== global/hooks/hooks.json is valid JSON =="
 node -e 'JSON.parse(require("fs").readFileSync("global/hooks/hooks.json","utf8"))'
 
@@ -20,10 +23,17 @@ echo "== every source hook command carries the removal tag =="
 node -e '
 const h = JSON.parse(require("fs").readFileSync("global/hooks/hooks.json", "utf8")).hooks;
 const cmds = Object.values(h).flat().flatMap((g) => g.hooks).map((x) => x.command);
-if (cmds.length !== 5) throw new Error("expected 5 hook commands, got " + cmds.length);
+if (cmds.length !== 6) throw new Error("expected 6 hook commands, got " + cmds.length);
 for (const c of cmds) {
   if (!c.includes("SUPERSTACK-HOOK")) throw new Error("untagged command (uninstall would orphan it): " + c);
 }
+'
+
+echo "== route-guard must emit a deny decision, scoped to SuperStack projects =="
+node -e '
+const s = require("fs").readFileSync("global/hooks/superstack-route-guard.js","utf8");
+if (!s.includes("permissionDecision") || !s.includes("deny")) throw new Error("guard does not emit a deny decision");
+if (!s.includes(".superstack.json")) throw new Error("guard must scope enforcement to SuperStack projects");
 '
 
 echo "== regression guard: installer must target settings.json, never the dead hooks/hooks.json path =="

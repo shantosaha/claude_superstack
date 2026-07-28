@@ -1,8 +1,9 @@
 {
-  "superstack_version": "1.0.0",
+  "superstack_version": "1.2.0",
   "ponytail_level": "auto",
   "preview_mode": "always",
   "heavy_task_file_threshold": 10,
+  "enforce_routing": true,
   "repos_enabled": {
     "ecc": true,
     "superpowers": true,

@@ -182,7 +182,8 @@ install_global_files(){
   # Logic files: always sync (not user-edited data) — copy unconditionally.
   cp "$SS_HOME/global/hooks/superstack-turn-report.js" "$CLAUDE_DIR/hooks/superstack-turn-report.js"
   cp "$SS_HOME/global/hooks/merge-hooks.js" "$CLAUDE_DIR/hooks/merge-hooks.js"
-  info "✅ Turn-report + merge-hooks scripts installed"
+  cp "$SS_HOME/global/hooks/superstack-route-guard.js" "$CLAUDE_DIR/hooks/superstack-route-guard.js"
+  info "✅ Turn-report + merge-hooks + route-guard scripts installed"
 
   # Hooks must be registered in ~/.claude/settings.json — Claude Code never reads
   # ~/.claude/hooks/hooks.json (that path is not a valid hook location; SuperStack
@@ -283,7 +284,7 @@ run_health_checks(){
   check "claude CLI" "have claude" "install Claude Code"
   check "global CLAUDE.md router" "grep -q CLAUDE-SUPERSTACK '$CLAUDE_DIR/CLAUDE.md' 2>/dev/null" "run: superstack install"
   check "settings.json parses" "node -e 'JSON.parse(require(\"fs\").readFileSync(process.argv[1],\"utf8\"))' '$CLAUDE_DIR/settings.json' 2>/dev/null" "~/.claude/settings.json is malformed — fix by hand; hooks cannot load"
-  check "hooks registered in settings.json (5)" "[ \"\$(node -e 'const s=JSON.parse(require(\"fs\").readFileSync(process.argv[1],\"utf8\"));let n=0;for(const g of Object.values(s.hooks||{}).flat())for(const h of (g.hooks||[]))if(String(h.command||\"\").includes(\"SUPERSTACK-HOOK\"))n++;console.log(n)' '$CLAUDE_DIR/settings.json' 2>/dev/null)\" = 5 ]" "run: superstack install"
+  check "hooks registered in settings.json (6)" "[ \"\$(node -e 'const s=JSON.parse(require(\"fs\").readFileSync(process.argv[1],\"utf8\"));let n=0;for(const g of Object.values(s.hooks||{}).flat())for(const h of (g.hooks||[]))if(String(h.command||\"\").includes(\"SUPERSTACK-HOOK\"))n++;console.log(n)' '$CLAUDE_DIR/settings.json' 2>/dev/null)\" = 6 ]" "run: superstack install"
   check "slash commands" "[ -f '$CLAUDE_DIR/commands/superstack-status.md' ]" "run: superstack install"
   check "turn report script" "[ -f '$CLAUDE_DIR/hooks/superstack-turn-report.js' ]" "run: superstack install"
   if [ -f "$CLAUDE_DIR/hooks/hooks.json.dead-pre-1.2.0" ]; then

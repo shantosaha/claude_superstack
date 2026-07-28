@@ -64,6 +64,8 @@ function cmdSnapshot(input) {
   const bridge = readJson(bridgePath(sessionId));
   writeJsonAtomic(statePath(sessionId), {
     tools: [],
+    // Recorded for the route-guard: a /skip in the prompt bypasses enforcement.
+    skip: /(^|\s)\/skip(\s|$)/.test(String(input.prompt || '')),
     cost0: bridge && typeof bridge.total_cost_usd === 'number' ? bridge.total_cost_usd : null,
     in0: bridge && typeof bridge.total_input_tokens === 'number' ? bridge.total_input_tokens : null,
     out0: bridge && typeof bridge.total_output_tokens === 'number' ? bridge.total_output_tokens : null,

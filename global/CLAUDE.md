@@ -98,6 +98,14 @@ Rules:
 Run the chain. Keep output minimal (ponytail). Verify success criteria
 (karpathy). Use ECC quality gates before declaring done.
 
+**Routing is ENFORCED, not advisory.** In a SuperStack project (one with a
+`.superstack.json`), a `PreToolUse` hook (`superstack-route-guard.js`) BLOCKS
+`Edit`/`Write`/`MultiEdit` until the turn has invoked at least one SuperStack
+skill, agent, or plugin. So actually route through the relevant one for the
+intent before editing — don't shortcut straight to a raw edit. Bypass a single
+prompt with `/skip`; disable for a project with `"enforce_routing": false` in
+`.superstack.json`. Outside a SuperStack project the gate does nothing.
+
 ## STEP 6 — MEMORY WRITE (silent)
 
 After completing meaningful work:

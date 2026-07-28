@@ -22,6 +22,17 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/hooks/superstack-route-guard.js\" 2>/dev/null || true # SUPERSTACK-HOOK"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "",
