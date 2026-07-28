@@ -225,9 +225,40 @@ install_global_files(){
   fi
 }
 
+# Build the code knowledge graph in the CURRENT directory. graphify writes to
+# ./graphify-out/. The correct command is `extract` (NOT `run`, which errors but
+# exits 0 — the pre-1.2.0 bug that silently broke every graph build). Uses
+# --code-only so no LLM API key is required; success is verified by the actual
+# presence of graph.json, never by exit code.
+build_graph(){
+  have graphify || { record_skipped "graphify" "graphify CLI not installed — graph not built"; return 0; }
+  echo "  Building code knowledge graph (graphify extract + cluster-only)..."
+  local out
+  # Step 1: extract graph.json from code (--code-only = no LLM API key needed).
+  out="$(graphify extract . --code-only 2>&1)"
+  if [ ! -f "graphify-out/graph.json" ]; then
+    c_yellow "⚠️  graphify produced no graph for this project."
+    echo "     Likely: no source files graphify's AST recognizes, or only non-code"
+    echo "     files (docs/HTML) that need an LLM key. For those, set e.g."
+    echo "     GEMINI_API_KEY / ANTHROPIC_API_KEY and run: graphify extract ."
+    printf '%s\n' "$out" | sed 's/^/       /' | tail -4
+    return 0
+  fi
+  # Step 2: cluster + generate graph.html and GRAPH_REPORT.md (--no-label keeps
+  # 'Community N' placeholders so no LLM key is required here either).
+  graphify cluster-only . --no-label >/dev/null 2>&1 || true
+  if [ -f "graphify-out/graph.html" ]; then
+    info "✅ code knowledge graph built → graphify-out/ (graph.json + graph.html + GRAPH_REPORT.md)"
+  else
+    info "✅ code graph built → graphify-out/graph.json (visual/report step skipped)"
+  fi
+}
+
 init_project_files(){
   local target="$1"
-  mkdir -p "$target/.vault/wiki" "$target/.graphify"
+  # Note: graphify writes to graphify-out/ (its own hardcoded default); we do
+  # not create .graphify/ — that folder was never used by the graphify CLI.
+  mkdir -p "$target/.vault/wiki"
   [ -f "$target/.vault/hot.md" ]   || cp "$SS_HOME/templates/vault/hot.md" "$target/.vault/hot.md"
   [ -f "$target/.vault/index.md" ] || cp "$SS_HOME/templates/vault/index.md" "$target/.vault/index.md"
   [ -f "$target/.vault/log.md" ]   || cp "$SS_HOME/templates/vault/log.md" "$target/.vault/log.md"
@@ -314,8 +345,8 @@ cmd_init(){
   [ -z "$name" ] && { c_red "Usage: superstack init <project-name>"; exit 1; }
   mkdir -p "$name"
   init_project_files "$name"
-  ( cd "$name" && have graphify && graphify run . >/dev/null 2>&1 || true )
-  c_green "✅ Project '$name' initialized with SuperStack (vault + graph + router)."
+  ( cd "$name" && build_graph )
+  c_green "✅ Project '$name' initialized with SuperStack (vault + router)."
   echo "   Ponytail level: auto (Claude decides; override with /ponytail <level>)"
 }
 
@@ -323,10 +354,7 @@ cmd_migrate(){
   local target="${1:-.}"
   [ -d "$target" ] || { c_red "Path not found: $target"; exit 1; }
   init_project_files "$target"
-  if have graphify; then
-    echo "  Building code knowledge graph (this may take a minute)..."
-    ( cd "$target" && graphify run . >/dev/null 2>&1 ) && info "✅ graphify index built" || c_yellow "⚠️  graphify index skipped"
-  fi
+  ( cd "$target" && build_graph )
   c_green "✅ Migrated '$target' to SuperStack."
 }
 
