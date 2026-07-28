@@ -27,7 +27,7 @@ Before asking the user for ANY context, check local memory (0 tokens):
 1. Read `.vault/hot.md` (recent session context)
 2. Read `.vault/index.md` (what the vault knows)
 3. If code-related: query graphify (`graphify query "<topic>"`) or read
-   `.graphify/` outputs to locate relevant files
+   `graphify-out/` outputs to locate relevant files
 4. Only if memory has nothing: ask the user.
 
 Use obsidian-skills conventions for ALL vault file operations

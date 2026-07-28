@@ -4,7 +4,7 @@
 
 ## Memory
 - Vault: `.vault/` (hot.md = recent context, index.md = topics, wiki/ = pages)
-- Code graph: `.graphify/`
+- Code graph: `graphify-out/`
 - ALWAYS check vault + graph before asking the user for context.
 
 ## Project-Specific Guidelines

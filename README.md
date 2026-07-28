@@ -121,7 +121,7 @@ $ superstack init my-awesome-app
   [*] Creating project layout structure...
     - my-awesome-app/CLAUDE.md
     - my-awesome-app/.vault/hot.md
-    - my-awesome-app/.graphify/graph.html
+    - my-awesome-app/graphify-out/graph.html
   [+] Generated configured Obsidian vault at my-awesome-app/.vault/
   [+] Initialized Git hooks for silent memory syncing.
   [+] New project 'my-awesome-app' has been successfully created!
@@ -219,13 +219,13 @@ sequenceDiagram
 your-project/
 ├── CLAUDE.md          # inherits global router
 ├── .vault/            # this project's Obsidian vault (open in Obsidian app)
-├── .graphify/         # this project's code knowledge graph
+├── graphify-out/         # this project's code knowledge graph
 └── .superstack.json   # per-project config
 ```
 
 ### Layout Anatomy Breakdown:
 * 📂 **`.vault/`:** Your local Markdown notebook containing active short-term and long-term memory logs (`hot.md`). Open this in the **Obsidian app** to interact with the notes visually.
-* 📂 **`.graphify/`:** Houses the auto-updated code knowledge graph. Double-click `graph.html` to open an interactive link visualizer of your code symbols in your browser.
+* 📂 **`graphify-out/`:** Houses the auto-updated code knowledge graph. Double-click `graph.html` to open an interactive link visualizer of your code symbols in your browser.
 * 📄 **`CLAUDE.md`:** The local instructions router that imports global policies (Karpathy limits, Ponytail optimization levels) and wires it into Claude Code.
 
 ## Requirements

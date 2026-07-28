@@ -19,7 +19,7 @@ Report, concisely, in this order:
 3. **Vault health**: does `.vault/hot.md` and `.vault/index.md` exist in the
    current project? Report present/missing and rough size (line count) of
    `hot.md`.
-4. **Graph health**: does `.graphify/` exist? If so, note when it was last
+4. **Graph health**: does `graphify-out/` exist? If so, note when it was last
    updated (mtime of newest file inside).
 
 Output as a short plain-text block, no more than ~10 lines. Do not run any

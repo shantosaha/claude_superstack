@@ -145,12 +145,12 @@
     <text x="95" y="19" fill="#22d3ee" font-family="system-ui, sans-serif" font-size="9" font-weight="500" class="sync-node pulse-delay-1">OBSIDIAN MEMORY</text>
   </g>
 
-  <!-- Level 1: .graphify/ -->
+  <!-- Level 1: graphify-out/ -->
   <g transform="translate(90, 160)">
     <rect x="0" y="0" width="180" height="30" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1" />
     <!-- Folder Icon -->
     <path d="M 15,7 L 23,7 L 27,11 L 33,11 L 33,23 L 15,23 Z" class="folder-icon graph-icon" style="fill: #ec4899;" />
-    <text x="45" y="19" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">.graphify/</text>
+    <text x="45" y="19" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">graphify-out/</text>
     <text x="110" y="19" fill="#ec4899" font-family="system-ui, sans-serif" font-size="9" font-weight="500" class="sync-node pulse-delay-2">CODE GRAPH</text>
   </g>
 

@@ -515,7 +515,7 @@ no automatic token/code minimalism).</p>
           <div class="node"><div class="t">wiki/</div><div class="d">individual linked knowledge pages</div></div>
         </div>
         <div class="node">
-          <div class="t">.graphify/</div>
+          <div class="t">graphify-out/</div>
           <div class="d">This project's code knowledge graph (graph.json, graph.html)</div>
         </div>
         <div class="node">
@@ -581,7 +581,7 @@ machine</strong>, automatically. You install once; every folder you ever run
 │   ├── index.md            ← table of contents: what topics exist
 │   ├── log.md               ← history of ingestions/sessions
 │   └── wiki/                ← individual knowledge pages (Markdown)
-├── .graphify/              ← THIS project's code knowledge graph
+├── graphify-out/              ← THIS project's code knowledge graph
 │   ├── graph.json
 │   ├── graph.html          ← open in browser to visually explore
 │   └── GRAPH_REPORT.md
@@ -840,7 +840,7 @@ Claude Code with SuperStack active.</p>
 <h3>B) Graphify (code structure)</h3>
 <p>A knowledge graph built by analyzing your actual source code — not your notes,
 your code.</p>
-<pre><code>.graphify/
+<pre><code>graphify-out/
 ├── graph.json        → machine-readable node/edge graph
 ├── graph.html         → open in a browser — interactive visual graph
 └── GRAPH_REPORT.md    → human-readable summary: key files, &quot;god nodes&quot;, clusters
@@ -1380,7 +1380,7 @@ const cliOutputs = {
     "[*] Creating project layout structure...",
     "  - your-project/CLAUDE.md",
     "  - your-project/.vault/hot.md",
-    "  - your-project/.graphify/graph.html",
+    "  - your-project/graphify-out/graph.html",
     "  - your-project/.superstack.json",
     "[+] Generated configured Obsidian vault at your-project/.vault/",
     "[+] Initialized Git hooks for silent memory syncing.",
@@ -1503,7 +1503,7 @@ you're curious:</p>
 <ul>
 <li>Open the <code>.vault</code> folder in the free <strong>Obsidian</strong> app to see your notes
   visually, with everything linked together</li>
-<li>Open <code>.graphify/graph.html</code> in your web browser to see a visual map of how
+<li>Open <code>graphify-out/graph.html</code> in your web browser to see a visual map of how
   your code connects</li>
 </ul>
 <p>You don't need to manage these files by hand — Claude reads and updates them
@@ -1523,7 +1523,7 @@ Memory checks are instant and free (just reading files on your computer).
 The only extra step is the one-line preview before bigger actions, which
 you can skip for small stuff with <code>/skip</code>.</p>
 <p><strong>Q: Is my project data sent anywhere?</strong>
-Your project's memory (<code>.vault</code>, <code>.graphify</code>) lives on your own computer.
+Your project's memory (<code>.vault</code>, <code>graphify-out</code>) lives on your own computer.
 Nothing about your local memory files is uploaded anywhere by SuperStack
 itself.</p>
 <hr />
@@ -3357,7 +3357,7 @@ Gemini CLI
 <pre><code class="language-bash">export GRAPHIFY_BACKEND=openai          # LLM backend for labeling
 export GRAPHIFY_MODEL=gpt-4o            # Model for community naming
 export GRAPHIFY_MAX_CONTEXT=200000      # Max context for analysis
-export GRAPHIFY_CACHE_DIR=.graphify     # Cache location
+export GRAPHIFY_CACHE_DIR=graphify-out     # Cache location
 export GRAPHIFY_LANGUAGES=python,ts     # Restrict to languages
 export GRAPHIFY_DEPTH=3                 # Traversal depth
 export GRAPHIFY_MIN_CONFIDENCE=0.7      # Min confidence threshold
@@ -4231,7 +4231,7 @@ environment) — pass <code>--with-design</code> to include it.</p>
    router + hooks in case they changed
 7. Tells you to run `superstack doctor` to confirm everything is healthy
 </code></pre>
-<p>Nothing here touches your projects' <code>.vault/</code> or <code>.graphify/</code> — updates only
+<p>Nothing here touches your projects' <code>.vault/</code> or <code>graphify-out/</code> — updates only
 affect the global tools, never your project memory.</p>
 <hr />
 <hr />

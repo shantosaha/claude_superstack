@@ -172,7 +172,7 @@ my-project/
 │   ├── index.md            ← table of contents: what topics exist
 │   ├── log.md               ← history of ingestions/sessions
 │   └── wiki/                ← individual knowledge pages (Markdown)
-├── .graphify/              ← THIS project's code knowledge graph
+├── graphify-out/              ← THIS project's code knowledge graph
 │   ├── graph.json
 │   ├── graph.html          ← open in browser to visually explore
 │   └── GRAPH_REPORT.md
@@ -361,7 +361,7 @@ A knowledge graph built by analyzing your actual source code — not your notes,
 your code.
 
 ```
-.graphify/
+graphify-out/
 ├── graph.json        → machine-readable node/edge graph
 ├── graph.html         → open in a browser — interactive visual graph
 └── GRAPH_REPORT.md    → human-readable summary: key files, "god nodes", clusters
@@ -609,7 +609,7 @@ User runs: superstack update
 7. Tells you to run `superstack doctor` to confirm everything is healthy
 ```
 
-Nothing here touches your projects' `.vault/` or `.graphify/` — updates only
+Nothing here touches your projects' `.vault/` or `graphify-out/` — updates only
 affect the global tools, never your project memory.
 
 ---

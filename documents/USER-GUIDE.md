@@ -250,7 +250,7 @@ you're curious:
 
 - Open the `.vault` folder in the free **Obsidian** app to see your notes
   visually, with everything linked together
-- Open `.graphify/graph.html` in your web browser to see a visual map of how
+- Open `graphify-out/graph.html` in your web browser to see a visual map of how
   your code connects
 
 You don't need to manage these files by hand — Claude reads and updates them
@@ -276,7 +276,7 @@ The only extra step is the one-line preview before bigger actions, which
 you can skip for small stuff with `/skip`.
 
 **Q: Is my project data sent anywhere?**
-Your project's memory (`.vault`, `.graphify`) lives on your own computer.
+Your project's memory (`.vault`, `graphify-out`) lives on your own computer.
 Nothing about your local memory files is uploaded anywhere by SuperStack
 itself.
 
