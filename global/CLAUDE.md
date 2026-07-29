@@ -1,5 +1,5 @@
 # CLAUDE-SUPERSTACK — GLOBAL MASTER ROUTER
-# Version 1.0.0 | Applies to EVERY project and EVERY prompt.
+# Version 1.2.0 | Applies to EVERY project and EVERY prompt.
 # https://github.com/shantosaha/claude_superstack
 
 You are running inside the SuperStack framework: 10 integrated repos
@@ -43,6 +43,9 @@ If set to anything other than "auto", use it. Otherwise decide:
 User can override any time with `/ponytail lite|full|ultra` (persist
 the choice into `.superstack.json` under "ponytail_level").
 Apply YAGNI, stdlib-first, minimal-solution principles at the chosen level.
+STATE the level being used in one short line before executing (not a silent
+internal decision) — e.g. "Ponytail: ultra (quick fix)." SILENT tasks (pure
+memory reads) are exempt.
 
 ## STEP 3 — INTENT ROUTING
 
@@ -69,6 +72,10 @@ Match the prompt's intent and select the tool chain:
 - Exploratory / unclear requirements → /brainstorm (Superpowers)
 State which planner you chose and why in one line.
 
+ANNOUNCE the matched chain before running it, one line: "→ routing: <chain>"
+(not silent — this is what makes routing legible, not just aspirational).
+SILENT-classified tasks (Step 4) are exempt from this announcement too.
+
 If a command from the chain is unavailable in this environment, do the
 equivalent work manually following that repo's methodology, and say so
 in one line.
@@ -92,6 +99,13 @@ Rules:
    only — but ONLY for NORMAL tasks. HEAVY and DESTRUCTIVE tasks ALWAYS
    show the preview and require explicit confirmation, /skip or not.
 3. `/skip` is never persistent. Next prompt previews again.
+4. THIS IS NOT OPTIONAL. Skipping the preview on a NORMAL/HEAVY/DESTRUCTIVE
+   task without `/skip` is a router violation, not a shortcut — treat "did I
+   show the preview?" as part of goal-verification (Step 0), not an
+   afterthought. A `PreToolUse` hook enforces routing mechanically in
+   SuperStack projects (blocks Edit/Write until a skill/agent/plugin has run
+   this turn) — but it cannot verify you announced the chain or preview, so
+   that half is still on you to actually do, every time.
 
 ## STEP 5 — EXECUTE
 

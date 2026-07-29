@@ -166,9 +166,24 @@ install_global_files(){
   echo "── Installing global router + hooks ──"
   mkdir -p "$CLAUDE_DIR/hooks" "$SS_HOME"
 
-  # Master router: merge-safe — back up existing CLAUDE.md once, idempotent re-run
+  # Master router: merge-safe — back up existing CLAUDE.md once, idempotent re-run.
+  # Version-aware: if the marker is already present but the SOURCE router is a
+  # newer version, re-sync it (backed up first) instead of skipping forever —
+  # <=1.2.0 skipped unconditionally once the marker existed, so router text
+  # updates (e.g. stronger STEP 2-4 wording) never reached existing installs.
+  router_version(){ grep -m1 "^# Version" "$1" 2>/dev/null | sed -E 's/^# Version ([0-9.]+).*/\1/'; }
   if [ -f "$CLAUDE_DIR/CLAUDE.md" ] && grep -q "CLAUDE-SUPERSTACK" "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null; then
-    info "✅ global CLAUDE.md already has SuperStack router (no change)"
+    installed_v="$(router_version "$CLAUDE_DIR/CLAUDE.md")"
+    src_v="$(router_version "$SS_HOME/global/CLAUDE.md")"
+    if [ -n "$src_v" ] && [ "$src_v" != "${installed_v:-}" ] \
+       && [ "$(printf '%s\n%s\n' "$src_v" "${installed_v:-0}" | sort -V | tail -1)" = "$src_v" ]; then
+      ts="$(date +%Y%m%d-%H%M%S)"
+      cp "$CLAUDE_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md.superstack-bak-$ts"
+      cp "$SS_HOME/global/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
+      info "✅ Router updated ${installed_v:-unknown} → $src_v (backup: CLAUDE.md.superstack-bak-$ts)"
+    else
+      info "✅ global CLAUDE.md already has SuperStack router (v${installed_v:-?}, up to date)"
+    fi
   elif [ -f "$CLAUDE_DIR/CLAUDE.md" ]; then
     cp "$CLAUDE_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md.pre-superstack.bak"
     c_yellow "  Existing global CLAUDE.md backed up → CLAUDE.md.pre-superstack.bak"
