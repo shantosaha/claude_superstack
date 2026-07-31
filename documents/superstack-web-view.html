@@ -282,10 +282,10 @@ system instead of 10 separate tools you'd have to remember to invoke.</p>
 <p>Without SuperStack, using these 10 repos looks like this:</p>
 <pre><code>You: &quot;add auth to login page&quot;
 You manually think: &quot;should I use GSD or ECC to plan this?&quot;
-You manually type: /gsd-plan-feature
+You manually type: skill:gsd-plan-phase
 You manually think: &quot;I should check the design system&quot;
-You manually type: uipro search &quot;auth form&quot;
-You manually type: /execute-plan
+You manually type: skill:ui-ux-pro-max:design &quot;auth form&quot;
+You manually type: skill:gsd-execute-phase
 You manually remember: &quot;did I run code review?&quot;
 You manually type: /ecc:code-review
 You manually think: &quot;should I save this to my notes?&quot;
@@ -293,8 +293,8 @@ You manually type: /save
 </code></pre>
 <p>With SuperStack, it looks like this:</p>
 <pre><code>You: &quot;add auth to login page&quot;
-Claude: &quot;→ Plan: /gsd-plan-feature, Design: uipro search 'auth form',
-         Build: /execute-plan, Review: /ecc:code-review. Proceed?&quot;
+Claude: &quot;→ Plan: skill:gsd-plan-phase, Design: skill:ui-ux-pro-max:design 'auth form',
+         Build: skill:gsd-execute-phase, Review: /ecc:code-review. Proceed?&quot;
 You: &quot;yes&quot;
 [everything runs, memory auto-updates]
 </code></pre>
@@ -546,10 +546,10 @@ no automatic token/code minimalism).</p>
 │   ├── andrej-karpathy-skills/
 │   └── ui-ux-pro-max/
 │
-├── commands/                                ← gsd-core's slash commands land here
-│   ├── gsd-new-project.md
-│   ├── gsd-plan-feature.md
-│   └── ...
+├── skills/                                  ← gsd-core lands its skills here
+│   ├── gsd-new-project/
+│   ├── gsd-plan-phase/
+│   └── ... (invoked via the Skill tool, not as slash commands)
 │
 └── superstack/                              ← SuperStack's own home
     ├── bin/
@@ -661,7 +661,7 @@ knowledge graph.</p>
           <span class="tag gate">confirmation gate</span>
           <h3>Preview + confirm</h3>
           <p>One line per command, plus a file-count estimate. <code>/skip</code> waives it for normal tasks only — heavy (&gt;10 files) and destructive actions always show, no exceptions.</p>
-          <div class="previewbox">→ /gsd-plan-feature (structure work)<br>→ uipro search "auth form" (design pattern)<br>→ /execute-plan (build) → /ecc:code-review (verify)<br>~4 files affected. Proceed?</div>
+          <div class="previewbox">→ skill:gsd-plan-phase (structure work)<br>→ skill:ui-ux-pro-max:design "auth form" (design pattern)<br>→ skill:gsd-execute-phase (build) → /ecc:code-review (verify)<br>~4 files affected. Proceed?</div>
         </div>
       </div>
 
@@ -701,6 +701,7 @@ STEP 3 → Intent routing (match prompt → tool chain)
 STEP 4 → Preview + confirmation
 STEP 5 → Execute the chain
 STEP 6 → Silent memory write-back
+STEP 7 → Report (Stop-hook banner + routing-miss warning)
 </code></pre>
 <p>Think of it as a <strong>flowchart written in English</strong> that Claude follows instead
 of a human following a checklist. Because Claude is a language model, it can
@@ -770,8 +771,8 @@ Claude Code with SuperStack active.</p>
 │ Claude matches your prompt against the intent table             │
 │ (Section 12) and picks a tool chain, e.g.:                      │
 │   &quot;add auth to login&quot; → feature+UI →                            │
-│   graphify query → /gsd-plan-feature → uipro search →           │
-│   /execute-plan → /ecc:code-review                               │
+│   graphify query → skill:gsd-plan-phase → skill:ui-ux-pro-max:design →           │
+│   skill:gsd-execute-phase → /ecc:code-review                               │
 │ If it's a planning task, Claude picks GSD vs ECC vs Superpowers  │
 │ intelligently based on size/risk/clarity of the task.            │
 └───────────────────────────────────────────────────────────────┘
@@ -785,8 +786,8 @@ Claude Code with SuperStack active.</p>
 │   HEAVY       → &gt;10 files or whole-codebase — preview ALWAYS     │
 │   DESTRUCTIVE → deletes/overwrites/resets — preview ALWAYS       │
 │ Preview looks like:                                              │
-│   &quot;→ /gsd-plan-feature (structure work), uipro search            │
-│      (design pattern), /execute-plan (build),                    │
+│   &quot;→ skill:gsd-plan-phase (structure work), skill:ui-ux-pro-max:design            │
+│      (design pattern), skill:gsd-execute-phase (build),                    │
 │      /ecc:code-review (verify). ~4 files. Proceed?&quot;              │
 └───────────────────────────────────────────────────────────────┘
                     │  (you confirm, or say /skip for NORMAL tasks)
@@ -801,7 +802,7 @@ Claude Code with SuperStack active.</p>
                     ▼
 ┌───────────────────────────────────────────────────────────────┐
 │ STEP 6 — SILENT MEMORY WRITE-BACK                                │
-│   • Append 2-5 line summary to .vault/hot.md                    │
+│   • Append a substantive 2-5 line summary to .vault/hot.md        │
 │   • Update .vault/index.md if new topics were created             │
 │   • Note affected files for the next graphify re-index           │
 │ Never announced. Happens automatically via the Stop hook.        │
@@ -809,12 +810,19 @@ Claude Code with SuperStack active.</p>
                     │
                     ▼
 ┌───────────────────────────────────────────────────────────────┐
-│ Stop HOOK fires automatically:                                   │
+│ STEP 7 — REPORT: Stop HOOK fires automatically:                  │
+│   • Appends ONE factual trace line to hot.md (auto-save,         │
+│     doesn't depend on the model remembering to write)            │
 │   • Trims hot.md to the last ~50 lines (keeps it small)           │
-│   • Turn-report script emits a one-line summary as a             │
-│     `systemMessage` — Stop hooks discard stderr and reject the   │
-│     additionalContext envelope, so systemMessage on stdout is    │
-│     the only channel that reaches you                            │
+│   • Turn-report script emits a one-line `systemMessage` banner   │
+│     — including a loud ⚠ routing-miss warning if the matched     │
+│     intent's expected repo never ran this turn (catches          │
+│     under-routing even on read-only turns the guard can't block) │
+│   • State tracking is project-scoped, not session-scoped, so a   │
+│     dispatched subagent's tool calls still get credited to the   │
+│     parent turn's tally                                          │
+│   • Hook commands run via `bash -lc` so `node` resolves from the │
+│     user's shell profile, not a bare (possibly PATH-less) call   │
 └───────────────────────────────────────────────────────────────┘
 </code></pre>
 <hr />
@@ -902,9 +910,9 @@ the preview step ONLY if the task is classified NORMAL. It is never persistent
 intentional: heavy/destructive actions must always get a human's eyes on them,
 no matter what.</p>
 <p><strong>Preview format</strong> — always one line per command, plus a file-count estimate:</p>
-<pre><code>→ /gsd-plan-feature (structure the work)
-→ uipro search &quot;auth form&quot; (find a design pattern)
-→ /execute-plan (implement)
+<pre><code>→ skill:gsd-plan-phase (structure the work)
+→ skill:ui-ux-pro-max:design &quot;auth form&quot; (find a design pattern)
+→ skill:gsd-execute-phase (implement)
 → /ecc:code-review (verify quality)
 ~4 files affected. Proceed?
 </code></pre>
@@ -1004,11 +1012,11 @@ deliberate design boundary, not an oversight.</p>
 <tbody>
 <tr>
 <td>New feature</td>
-<td>graphify query → planner (see rule below) → [uipro search if UI] → <code>/execute-plan</code> → <code>/ecc:code-review</code></td>
+<td>graphify query → planner (see rule below) → [skill:ui-ux-pro-max:design if UI] → <code>skill:gsd-execute-phase</code> → <code>/ecc:code-review</code></td>
 </tr>
 <tr>
 <td>Bug fix</td>
-<td>graphify query → <code>/gsd-plan-bugfix</code> → fix (ponytail ultra) → <code>/ecc:quality-gate</code></td>
+<td>graphify query → <code>skill:gsd-debug</code> → fix (ponytail ultra) → <code>/ecc:quality-gate</code></td>
 </tr>
 <tr>
 <td>Debug/build error</td>
@@ -1016,7 +1024,7 @@ deliberate design boundary, not an oversight.</p>
 </tr>
 <tr>
 <td>Refactor/cleanup</td>
-<td><code>/ponytail-audit</code> → <code>/ecc:refactor-clean</code> → <code>/ecc:test-coverage</code></td>
+<td><code>skill:ponytail:ponytail-audit</code> → <code>/ecc:refactor-clean</code> → <code>/ecc:test-coverage</code></td>
 </tr>
 <tr>
 <td>Write tests</td>
@@ -1028,11 +1036,11 @@ deliberate design boundary, not an oversight.</p>
 </tr>
 <tr>
 <td>UI/design work</td>
-<td><code>uipro search "&lt;pattern&gt;"</code> → build → [<code>od plugin apply</code> if open-design installed]</td>
+<td><code>skill:ui-ux-pro-max:design "&lt;pattern&gt;"</code> → build → [<code>od plugin apply</code> if open-design installed]</td>
 </tr>
 <tr>
 <td>Research a topic</td>
-<td><code>/autoresearch &lt;topic&gt;</code> → results filed into <code>.vault/</code></td>
+<td><code>skill:claude-obsidian:autoresearch &lt;topic&gt;</code> → results filed into <code>.vault/</code></td>
 </tr>
 <tr>
 <td>"What do we know about X"</td>
@@ -1044,7 +1052,7 @@ deliberate design boundary, not an oversight.</p>
 </tr>
 <tr>
 <td>Ship/release</td>
-<td><code>/gsd-ready-to-ship</code> → <code>/ecc:quality-gate</code> → <code>graphify diff</code> → <code>/save</code></td>
+<td><code>skill:gsd-ship</code> → <code>/ecc:quality-gate</code> → <code>graphify diff</code> → <code>/save</code></td>
 </tr>
 <tr>
 <td>Understand the codebase</td>
@@ -1053,9 +1061,9 @@ deliberate design boundary, not an oversight.</p>
 </tbody>
 </table>
 <p><strong>Planner selection rule</strong> (used whenever intent = "plan"):
-- Multi-phase, large, or risky → <strong>GSD Core</strong> (<code>/gsd-plan-feature</code>)
+- Multi-phase, large, or risky → <strong>GSD Core</strong> (<code>skill:gsd-plan-phase</code>)
 - Small and well-understood → <strong>ECC</strong> (<code>/ecc:plan</code>)
-- Requirements still unclear → <strong>Superpowers</strong> (<code>/brainstorm</code>)
+- Requirements still unclear → <strong>Superpowers</strong> (<code>skill:superpowers:brainstorming</code>)
 Claude states which one it picked and why, in one line.</p>
 <hr /></div>
   </section>
@@ -1136,7 +1144,7 @@ talking to a helpful coworker. No special syntax needed.</p>
 </blockquote>
 <p><strong>Claude replies:</strong></p>
 <blockquote>
-<p>→ Plan: /gsd-plan-feature (structure the work)
+<p>→ Plan: skill:gsd-plan-phase (structure the work)
 → Design: search for an auth form pattern
 → Build: implement it
 → Review: check code quality
@@ -1861,15 +1869,15 @@ test-driven workflow instead of you guessing where to start.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>/brainstorm</code></td>
+<td><code>skill:superpowers:brainstorming</code></td>
 <td>Explore ideas freely, without writing any code yet</td>
 </tr>
 <tr>
-<td><code>/write-plan</code></td>
+<td><code>skill:superpowers:writing-plans</code></td>
 <td>Turn an idea into a concrete, detailed implementation plan</td>
 </tr>
 <tr>
-<td><code>/execute-plan</code></td>
+<td><code>skill:superpowers:executing-plans</code></td>
 <td>Carry out a written plan, running independent parts in parallel</td>
 </tr>
 <tr>
@@ -1883,7 +1891,7 @@ test-driven workflow instead of you guessing where to start.</p>
 </tbody>
 </table>
 <p><strong>Real example:</strong> You're not sure if you want a monolith or microservices.</p>
-<pre><code>/brainstorm &quot;monolith vs microservices for this project&quot;
+<pre><code>skill:superpowers:brainstorming &quot;monolith vs microservices for this project&quot;
 </code></pre>
 <p>Claude explores both directions without committing code, so you can decide
 with a clear picture instead of Claude jumping straight to implementation.</p>
@@ -1914,11 +1922,11 @@ with a clear picture instead of Claude jumping straight to implementation.</p>
 <td>Check what phase the current feature is in</td>
 </tr>
 <tr>
-<td><code>/gsd-plan-feature</code></td>
+<td><code>skill:gsd-plan-phase</code></td>
 <td>Plan a new feature across discuss/plan/execute/test/ship phases</td>
 </tr>
 <tr>
-<td><code>/gsd-plan-bugfix</code></td>
+<td><code>skill:gsd-debug</code></td>
 <td>Plan a targeted bug fix the same way</td>
 </tr>
 <tr>
@@ -1930,7 +1938,7 @@ with a clear picture instead of Claude jumping straight to implementation.</p>
 <td>Review completed work against the plan</td>
 </tr>
 <tr>
-<td><code>/gsd-ready-to-ship</code></td>
+<td><code>skill:gsd-ship</code></td>
 <td>Run final checks before releasing</td>
 </tr>
 </tbody>
@@ -1938,7 +1946,7 @@ with a clear picture instead of Claude jumping straight to implementation.</p>
 <p><strong>Real example:</strong> A feature is big enough to span several days and multiple
 files, and you're worried Claude will "forget" earlier decisions halfway
 through.</p>
-<pre><code>/gsd-plan-feature &quot;add multi-tenant support&quot;
+<pre><code>skill:gsd-plan-phase &quot;add multi-tenant support&quot;
 </code></pre>
 <p>GSD breaks it into phases with fresh context at each step, so nothing gets
 lost partway through a long build.</p>
@@ -1973,7 +1981,7 @@ lost partway through a long build.</p>
 <td>Review existing code against minimalism principles</td>
 </tr>
 <tr>
-<td><code>/ponytail-audit</code></td>
+<td><code>skill:ponytail:ponytail-audit</code></td>
 <td>Audit the whole codebase for over-engineering</td>
 </tr>
 <tr>
@@ -1991,7 +1999,7 @@ lost partway through a long build.</p>
 </tbody>
 </table>
 <p><strong>Real example:</strong> You suspect your codebase has grown bloated over time.</p>
-<pre><code>/ponytail-audit
+<pre><code>skill:ponytail:ponytail-audit
 </code></pre>
 <p>It flags over-engineered spots — unnecessary abstractions, unused
 flexibility — so you know exactly what to simplify first.</p>
@@ -2085,7 +2093,7 @@ every file one by one.</p>
 <td>Save with a specific title</td>
 </tr>
 <tr>
-<td><code>/autoresearch [topic]</code></td>
+<td><code>skill:claude-obsidian:autoresearch [topic]</code></td>
 <td>Autonomously research a topic online and file the findings</td>
 </tr>
 <tr>
@@ -2182,7 +2190,7 @@ no silent assumptions, no over-engineering, goal-driven execution.)</em></p>
 </table>
 <p><strong>Real example:</strong> You need a color palette and font pairing for a finance
 dashboard, not just "something that looks nice."</p>
-<pre><code>uipro search &quot;finance dashboard&quot; --domain color-palettes
+<pre><code>skill:ui-ux-pro-max:design &quot;finance dashboard&quot; --domain color-palettes
 </code></pre>
 <p>Returns specific, tested palette options suited to that exact product type,
 instead of a generic guess.</p>
@@ -2671,15 +2679,15 @@ cd superpowers &amp;&amp; npm install
 </thead>
 <tbody>
 <tr>
-<td><code>/brainstorm</code></td>
+<td><code>skill:superpowers:brainstorming</code></td>
 <td>Explore ideas without implementation</td>
 </tr>
 <tr>
-<td><code>/write-plan</code></td>
+<td><code>skill:superpowers:writing-plans</code></td>
 <td>Create detailed implementation plan</td>
 </tr>
 <tr>
-<td><code>/execute-plan</code></td>
+<td><code>skill:superpowers:executing-plans</code></td>
 <td>Execute planned work with parallel tasks</td>
 </tr>
 <tr>
@@ -2785,11 +2793,11 @@ Test     → Verify and validate
 Ship     → Deploy and monitor
 </code></pre>
 <h3>Workflow Commands</h3>
-<pre><code class="language-bash">/gsd-plan-feature &quot;Add new API endpoint&quot;
-/gsd-plan-bugfix &quot;Fix authentication issue&quot;
+<pre><code class="language-bash">skill:gsd-plan-phase &quot;Add new API endpoint&quot;
+skill:gsd-debug &quot;Fix authentication issue&quot;
 /gsd-estimate &quot;effort in hours&quot;
 /gsd-review &quot;code changes&quot;
-/gsd-ready-to-ship &quot;final checks&quot;
+skill:gsd-ship &quot;final checks&quot;
 </code></pre>
 <h3>Generated Project Artifacts</h3>
 <pre><code>.planning/
@@ -2923,18 +2931,18 @@ npx @opengsd/gsd-core import-state    # Import project state
 6. Deploy
 </code></pre>
 <h3>Superpowers Workflow</h3>
-<pre><code>1. /brainstorm &quot;problem space&quot;
-2. /write-plan &quot;implementation&quot;
-3. /execute-plan &quot;build it&quot;
+<pre><code>1. skill:superpowers:brainstorming &quot;problem space&quot;
+2. skill:superpowers:writing-plans &quot;implementation&quot;
+3. skill:superpowers:executing-plans &quot;build it&quot;
 4. Team review
 5. Ship
 </code></pre>
 <h3>GSD Core Workflow</h3>
 <pre><code>1. /gsd-new-project or /gsd-onboard
-2. /gsd-plan-feature
+2. skill:gsd-plan-phase
 3. Parallel execution waves
 4. Verification phase
-5. /gsd-ready-to-ship
+5. skill:gsd-ship
 </code></pre>
 <hr />
 <h2>Installation Checklist</h2>
@@ -2950,7 +2958,7 @@ npx @opengsd/gsd-core import-state    # Import project state
 <ul>
 <li>[ ] <code>/plugin marketplace add obra/superpowers-marketplace</code></li>
 <li>[ ] <code>/plugin install superpowers@superpowers-marketplace</code></li>
-<li>[ ] Run <code>/brainstorm</code> or <code>/write-plan</code> to test</li>
+<li>[ ] Run <code>skill:superpowers:brainstorming</code> or <code>/write-plan</code> to test</li>
 <li>[ ] Explore available skills</li>
 </ul>
 <h3>For GSD Core</h3>
@@ -3035,7 +3043,7 @@ run codewhale from checkout
 <td>Review code with lazy principles</td>
 </tr>
 <tr>
-<td><code>/ponytail-audit</code></td>
+<td><code>skill:ponytail:ponytail-audit</code></td>
 <td>Audit codebase for over-engineering</td>
 </tr>
 <tr>
@@ -3482,7 +3490,7 @@ claude plugin list  # verify install
 <td>Save with specific title (skips naming question)</td>
 </tr>
 <tr>
-<td><code>/autoresearch [topic]</code></td>
+<td><code>skill:claude-obsidian:autoresearch [topic]</code></td>
 <td>Autonomous research loop: search, fetch, synthesize, file</td>
 </tr>
 <tr>
@@ -4038,21 +4046,21 @@ Use when 'od' command conflicts with system utilities
    [Karpathy guidelines auto-applied via CLAUDE.md/plugin throughout]
 
 PLANNING
-5. /brainstorm                    (Superpowers: explore ideas)
+5. skill:superpowers:brainstorming                    (Superpowers: explore ideas)
 6. /gsd-onboard                   (GSD: understand codebase)
-7. /gsd-plan-feature              (GSD: plan this sprint)
+7. skill:gsd-plan-phase              (GSD: plan this sprint)
 
 DESIGN (if UI/UX work involved)
-8. uipro search &quot;&lt;design query&gt;&quot;  (ui-ux-pro-max: find design pattern)
+8. skill:ui-ux-pro-max:design &quot;&lt;design query&gt;&quot;  (ui-ux-pro-max: find design pattern)
 9. od plugin apply &lt;plugin&gt;       (open-design: generate artifact)
 
 EXECUTION
-10. /execute-plan                 (Superpowers: implement)
+10. skill:superpowers:executing-plans       (Superpowers: implement)
 11. /ecc:code-review              (ECC: verify quality)
 12. /ecc:quality-gate             (ECC: final checks)
 
 COMPLETION
-13. /gsd-ready-to-ship            (GSD: ship it)
+13. skill:gsd-ship            (GSD: ship it)
 14. /graphify diff                (see what changed)
 15. /ecc:learn                    (extract patterns for next time)
 16. /save                         (claude-obsidian: file the session)

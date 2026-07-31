@@ -1,5 +1,5 @@
 # CLAUDE-SUPERSTACK — GLOBAL MASTER ROUTER
-# Version 1.2.0 | Applies to EVERY project and EVERY prompt.
+# Version 1.6.0 | Applies to EVERY project and EVERY prompt.
 # https://github.com/shantosaha/claude_superstack
 
 You are running inside the SuperStack framework: 10 integrated repos
@@ -30,6 +30,15 @@ Before asking the user for ANY context, check local memory (0 tokens):
    `graphify-out/` outputs to locate relevant files
 4. Only if memory has nothing: ask the user.
 
+SILENT means literally that: do NOT narrate this step in any form — no
+"reading vault", "checking memory", "memory shows...", not even a one-line
+mention before your real answer. Tool calls will show in the transcript
+regardless; the rule is about your PROSE, not the tool call itself. This does
+NOT conflict with Step 0's "no silent assumptions" — that rule is about
+requirements and decisions you make, not about narrating routine file reads.
+If you catch yourself writing a sentence that starts with "Checking..." or
+"Reading..." before this step's output, delete it before responding.
+
 Use obsidian-skills conventions for ALL vault file operations
 (OFM markdown, wikilinks, Bases, JSON Canvas).
 
@@ -51,25 +60,37 @@ memory reads) are exempt.
 
 Match the prompt's intent and select the tool chain:
 
+Chain entries prefixed `skill:` are invoked via the Skill tool (they are NOT
+shell commands or slash commands, even when named like one) — GSD-core and
+ui-ux-pro-max ship as skills, not CLIs. Entries prefixed `/` are real ECC
+slash commands. Verify names against `~/.claude/skills/` and
+`~/.claude/plugins/cache/*/commands/` if a chain ever 404s — do not guess.
+
 | Intent | Chain |
 |---|---|
-| New feature | graphify query → plan (see planner rule) → [uipro search if UI] → /execute-plan → /ecc:code-review |
-| Bug fix | graphify query → /gsd-plan-bugfix → fix (ponytail ultra) → /ecc:quality-gate |
+| New feature | graphify query → plan (see planner rule) → [skill:ui-ux-pro-max:design if UI] → skill:gsd-execute-phase → /ecc:code-review |
+| Bug fix | graphify query → skill:gsd-debug (or skill:gsd-quick for small fixes) → fix (ponytail ultra) → /ecc:quality-gate |
 | Debug/build error | graphify query → /ecc:build-fix → /ecc:checkpoint |
-| Refactor/cleanup | /ponytail-audit → /ecc:refactor-clean → /ecc:test-coverage |
-| Tests | graphify query → ECC tdd-workflow skill → /ecc:test-coverage |
-| Security | /ecc:security-scan → security-review skill |
-| UI/design | uipro search "<pattern>" → build with result → [od plugin apply if artifact needed & open-design installed] |
-| Research | /autoresearch <topic> → results filed into .vault/ |
+| Refactor/cleanup | skill:ponytail:ponytail-audit → /ecc:refactor-clean → /ecc:test-coverage |
+| Tests | graphify query → skill:ecc tdd-workflow → /ecc:test-coverage |
+| Security | /ecc:security-scan → skill:ecc security-review |
+| UI/design | skill:ui-ux-pro-max:design (or :ui-styling) → build with result → [skill:ecc:accessibility if a11y-specific] → [open-design skill if artifact needed & repos_enabled.open-design is true] |
+| Research | skill:claude-obsidian:autoresearch <topic> → results filed into .vault/ |
 | Memory question ("what do we know about X") | vault + graphify only, cited answer, SILENT (no preview) |
 | Remember/save | vault ingest or /save — SILENT |
-| Ship/release | /gsd-ready-to-ship → /ecc:quality-gate → graphify diff → /save |
-| Understand codebase | /graphify . or graphify query → summarize from graph |
+| Ship/release | skill:gsd-ship → /ecc:quality-gate → graphify diff → /save |
+| Understand codebase | graphify query → summarize from graph; if genuinely unfamiliar (first time in this repo) → skill:gsd-onboard → skill:gsd-map-codebase first (graphify has no separate `.` subcommand — `graphify run .` builds the graph, `graphify query` reads it) |
+| Documentation (write/update docs) | graphify query → /ecc:update-docs |
+| Database/schema change | skill:ecc:database-migrations → agent:database-reviewer (review the migration) |
+| Review an existing PR | /ecc:review-pr (or /ecc:pr for the PR workflow itself) |
+| Deep/intermittent bug (not a simple build failure) | skill:superpowers:systematic-debugging → skill:gsd-debug |
+| Extract/save a reusable pattern | skill:ecc:learn → vault ingest |
+| Project status/progress | skill:gsd-progress (or skill:gsd-stats for metrics) |
 
 **Planner rule** (when intent = plan/feature): decide intelligently —
-- Multi-phase / large / risky → /gsd-plan-feature (GSD)
+- Multi-phase / large / risky → skill:gsd-plan-phase (or skill:gsd-new-project if greenfield) (GSD)
 - Small, well-understood → /ecc:plan (ECC)
-- Exploratory / unclear requirements → /brainstorm (Superpowers)
+- Exploratory / unclear requirements → skill:superpowers:brainstorming (Superpowers)
 State which planner you chose and why in one line.
 
 ANNOUNCE the matched chain before running it, one line: "→ routing: <chain>"
@@ -79,6 +100,20 @@ SILENT-classified tasks (Step 4) are exempt from this announcement too.
 If a command from the chain is unavailable in this environment, do the
 equivalent work manually following that repo's methodology, and say so
 in one line.
+
+**Run the EXACT items named in the matched row — never a nearby-sounding
+substitute.** A similarly-named skill from the same repo is NOT interchangeable
+with the one the table names, even when it feels "close enough": if the row
+says `skill:ponytail:ponytail-audit`, running `skill:ponytail:ponytail-review`
+instead is a router violation, not a reasonable stand-in — they do different
+things and the PreToolUse guard cannot tell them apart (it only checks that
+*some* SuperStack skill ran this turn, not that the *right* one did). This
+applies per item: if a chain has three steps, run all three, in order — do
+not collapse "Bug fix" into a single quality-pass skill instead of
+`skill:gsd-debug → fix → /ecc:quality-gate`, and do not silently drop the
+security row's `/ecc:security-scan` step just because `skill:ecc:security-review`
+also ran. Only the "unavailable in this environment" fallback above licenses
+a substitution — and even then it must be disclosed in one line, not silent.
 
 ## STEP 4 — PREVIEW + CONFIRMATION PROTOCOL
 
@@ -109,8 +144,10 @@ Rules:
 
 ## STEP 5 — EXECUTE
 
-Run the chain. Keep output minimal (ponytail). Verify success criteria
-(karpathy). Use ECC quality gates before declaring done.
+Run the chain — the full chain, the exact items, per the anti-substitution
+rule in Step 3, not just the first step or a close-enough alternative. Keep
+output minimal (ponytail). Verify success criteria (karpathy). Use ECC
+quality gates before declaring done.
 
 **Routing is ENFORCED, not advisory.** In a SuperStack project (one with a
 `.superstack.json`), a `PreToolUse` hook (`superstack-route-guard.js`) BLOCKS
@@ -120,14 +157,31 @@ intent before editing — don't shortcut straight to a raw edit. Bypass a single
 prompt with `/skip`; disable for a project with `"enforce_routing": false` in
 `.superstack.json`. Outside a SuperStack project the gate does nothing.
 
+On READ-ONLY turns (explain/understand/research/memory questions) there is no
+edit for that guard to block, so a second check backstops them: the Stop hook
+compares the prompt's intent against the repos actually used and prints a
+`⚠ routing-miss: expected <repo> for <intent>, none ran` warning in the banner
+when the matching skill was skipped. It is a warning, not a block (nothing can
+block "just answering"), but treat a routing-miss as a real violation to
+correct next turn, not noise. `/skip` suppresses it for that prompt.
+
 ## STEP 6 — MEMORY WRITE (silent)
 
-After completing meaningful work:
-1. Append a 2-5 line summary to `.vault/hot.md` (rotate: keep last ~50 lines)
-2. Add/refresh entries in `.vault/index.md` if new topics were created
+After completing meaningful work you MUST persist memory — this is not optional,
+it is how the next session inherits context:
+1. Append a substantive 2-5 line summary to `.vault/hot.md` — what changed, why,
+   and which files were affected (rotate: the Stop hook keeps the last ~50 lines).
+2. Add/refresh entries in `.vault/index.md` if new topics were created.
 3. If code changed: note affected files; re-run graphify on changed dirs
    when convenient (or on /ship).
-Never announce these writes.
+Never announce these writes — no "updating memory", "saving to vault", or
+similar line before or after the write. Same rule as Step 1: the file write
+itself is fine and expected, narrating it in your response is not.
+
+The Stop hook ALSO records one factual trace line automatically each turn
+(`- [time] used: <tools> — <prompt>`), so memory is never empty even if a turn
+was light. That auto-line is complementary — it does NOT replace your own
+substantive summary above, which carries the reasoning the trace can't.
 
 ## STEP 7 — REPORT
 

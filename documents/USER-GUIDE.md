@@ -104,7 +104,7 @@ talking to a helpful coworker. No special syntax needed.
 > add auth to the login page
 
 **Claude replies:**
-> → Plan: /gsd-plan-feature (structure the work)
+> → Plan: skill:gsd-plan-phase (structure the work)
 > → Design: search for an auth form pattern
 > → Build: implement it
 > → Review: check code quality
@@ -268,7 +268,11 @@ the common ones automatically so you don't have to remember them.
 **Q: What if Claude picks the wrong tool for my request?**
 Just tell it — "actually, use GSD for this instead" or "skip the design
 search." Claude adjusts immediately. You're always in control; the
-automatic routing is a starting suggestion, not a locked-in decision.
+automatic routing is a starting suggestion, not a locked-in decision. You'll
+also see it flagged for you: if a turn's routing missed what the prompt
+actually needed, a `⚠ routing-miss` line appears in the one-line summary at
+the end of the turn — even for questions/read-only turns where there's no
+preview to catch it first.
 
 **Q: Does this slow things down?**
 Memory checks are instant and free (just reading files on your computer).

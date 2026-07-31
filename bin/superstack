@@ -277,7 +277,7 @@ init_project_files(){
   mkdir -p "$target/.vault/wiki"
   [ -f "$target/.vault/hot.md" ]   || cp "$SS_HOME/templates/vault/hot.md" "$target/.vault/hot.md"
   [ -f "$target/.vault/index.md" ] || cp "$SS_HOME/templates/vault/index.md" "$target/.vault/index.md"
-  [ -f "$target/.vault/log.md" ]   || cp "$SS_HOME/templates/vault/log.md" "$target/.vault/log.md"
+  [ -f "$target/.vault/turn-log.md" ] || cp "$SS_HOME/templates/vault/turn-log.md" "$target/.vault/turn-log.md"
   [ -f "$target/.superstack.json" ] || cp "$SS_HOME/templates/superstack.json" "$target/.superstack.json"
   if [ -f "$target/CLAUDE.md" ]; then
     grep -q "SuperStack Enabled" "$target/CLAUDE.md" || {

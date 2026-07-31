@@ -30,7 +30,7 @@ Turns Claude Code into an integrated, memory-backed, self-optimizing dev environ
 <!-- STATS_START -->
 | Metric | Value | Description |
 |---|---|---|
-| **SuperStack Version** | `v1.2.0` | Current release version |
+| **SuperStack Version** | `v1.6.0` | Current release version |
 | **Integrated Frameworks** | `10` | Unified Claude Code extensions |
 | **Automation Scripts** | `5 files` (1037 lines) | Core installation & orchestration |
 | **Documentation Assets** | `6 guides` | Deep-dives, manuals, and schemas |
@@ -198,7 +198,8 @@ sequenceDiagram
 3. **Intent routing** — your prompt is matched to the right tool chain (plan → design → execute → review)
 4. **Preview + confirm** — one line per command before running. `/skip` skips it for that prompt (never for heavy/destructive tasks: >10 files or deletions always confirm)
 5. **Execute** — the chain runs with ECC quality gates
-6. **Silent memory write** — hot cache trimmed on session Stop; a one-line turn report shows what ran and what it cost
+6. **Silent memory write** — a substantive summary is written to `.vault/hot.md`, plus a deterministic one-line factual entry auto-appended by the Stop hook (so memory persists even on a light turn); hot cache then trimmed to the last ~50 lines
+7. **Report** — a one-line Stop-hook banner shows what ran and what it cost; on a mismatch between your intent and what actually ran, it also prints a `⚠ routing-miss` warning — even on read-only turns the preview gate can't cover
 
 ## In-chat commands
 

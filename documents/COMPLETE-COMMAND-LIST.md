@@ -112,16 +112,16 @@ This reviews the Go-specific patterns first, then sets up a proper test-driven w
 
 | Command | Description |
 |---|---|
-| `/brainstorm` | Explore ideas freely, without writing any code yet |
-| `/write-plan` | Turn an idea into a concrete, detailed implementation plan |
-| `/execute-plan` | Carry out a written plan, running independent parts in parallel |
+| skill:superpowers:brainstorming | Explore ideas freely, without writing any code yet |
+| `skill:superpowers:writing-plans` | Turn an idea into a concrete, detailed implementation plan |
+| `skill:superpowers:executing-plans` | Carry out a written plan, running independent parts in parallel |
 | `/think-pair-share` | Work through a decision collaboratively, weighing trade-offs |
 | `/preserving-productive-tensions` | Keep multiple valid solutions open instead of collapsing too early |
 
 **Real example:** You're not sure if you want a monolith or microservices.
 
 ```
-/brainstorm "monolith vs microservices for this project"
+skill:superpowers:brainstorming "monolith vs microservices for this project"
 ```
 
 Claude explores both directions without committing code, so you can decide with a clear picture instead of Claude jumping straight to implementation.
@@ -130,22 +130,27 @@ Claude explores both directions without committing code, so you can decide with 
 
 ## 3. GSD Core — Long-Feature Context Management
 
+GSD-core ships as skills (invoked via the Skill tool), not slash commands —
+`skill:gsd-x` below, not `/gsd-x`.
+
 | Command | Description |
 |---|---|
-| `/gsd-new-project` | Initialize a brand-new project under GSD's structure |
-| `/gsd-onboard` | Bring an existing codebase into GSD's phase system |
-| `/gsd-sync` | Sync GSD's tracked state with the current project |
-| `/gsd-status` | Check what phase the current feature is in |
-| `/gsd-plan-feature` | Plan a new feature across discuss/plan/execute/test/ship phases |
-| `/gsd-plan-bugfix` | Plan a targeted bug fix the same way |
-| `/gsd-estimate` | Estimate effort for planned work |
-| `/gsd-review` | Review completed work against the plan |
-| `/gsd-ready-to-ship` | Run final checks before releasing |
+| `skill:gsd-new-project` | Initialize a brand-new project under GSD's structure |
+| `skill:gsd-onboard` | Bring an existing codebase into GSD's phase system |
+| `skill:gsd-plan-phase` | Plan a new feature across discuss/plan/execute/test/ship phases |
+| `skill:gsd-execute-phase` | Carry out a planned phase |
+| `skill:gsd-debug` (or `skill:gsd-quick`) | Plan a targeted bug fix the same way |
+| `skill:gsd-review` | Review completed work against the plan |
+| `skill:gsd-progress` (or `skill:gsd-stats`) | Check what phase the current feature is in / metrics |
+| `skill:gsd-ship` | Run final checks before releasing |
+
+*(`gsd-sync` and `gsd-estimate` from earlier revisions of this list were never
+verified against a real install and have been removed rather than guessed at.)*
 
 **Real example:** A feature is big enough to span several days and multiple files, and you're worried Claude will "forget" earlier decisions halfway through.
 
 ```
-/gsd-plan-feature "add multi-tenant support"
+skill:gsd-plan-phase "add multi-tenant support"
 ```
 
 GSD breaks it into phases with fresh context at each step, so nothing gets lost partway through a long build.
@@ -161,7 +166,7 @@ GSD breaks it into phases with fresh context at each step, so nothing gets lost 
 | `/ponytail ultra` | Forces the shortest, most minimal solution possible |
 | `/ponytail off` | Turn off lazy-dev mode entirely |
 | `/ponytail-review` | Review existing code against minimalism principles |
-| `/ponytail-audit` | Audit the whole codebase for over-engineering |
+| `skill:ponytail:ponytail-audit` | Audit the whole codebase for over-engineering |
 | `/ponytail-debt` | Track shortcuts taken and technical debt incurred |
 | `/ponytail-gain` | See how much simpler the code became with ponytail active |
 | `/ponytail-help` | Show a quick reference of ponytail commands |
@@ -169,7 +174,7 @@ GSD breaks it into phases with fresh context at each step, so nothing gets lost 
 **Real example:** You suspect your codebase has grown bloated over time.
 
 ```
-/ponytail-audit
+skill:ponytail:ponytail-audit
 ```
 
 It flags over-engineered spots — unnecessary abstractions, unused flexibility — so you know exactly what to simplify first.
@@ -210,7 +215,7 @@ Then open `graph.html` in your browser — you get a visual map showing which fi
 | `what do you know about X?` | Get a cited answer synthesized from the vault |
 | `/save` | File the current conversation as a wiki note |
 | `/save [name]` | Save with a specific title |
-| `/autoresearch [topic]` | Autonomously research a topic online and file the findings |
+| `skill:claude-obsidian:autoresearch [topic]` | Autonomously research a topic online and file the findings |
 | `/canvas` | Open or create a visual canvas of notes/images/PDFs |
 | `/think [problem]` | Apply a structured 10-principle thinking process to a problem |
 | `lint the wiki` | Check the vault for orphaned notes, dead links, and gaps |
@@ -248,6 +253,11 @@ It's now a permanent, searchable note — next time you ask "why did we choose J
 
 ## 9. ui-ux-pro-max-skill — Design Intelligence
 
+ui-ux-pro-max ships as skills (`skill:ui-ux-pro-max:design`, `:ui-styling`,
+`:banner-design`, `:brand`, `:slides`, `:design-system`) — there is no `uipro`
+CLI. The rows below describe an npm-installable companion CLI that may exist
+separately; unverified against a real install, listed as-is rather than guessed:
+
 | Command | Description |
 |---|---|
 | `uipro init --ai <platform>` | Install the design database skill for your AI platform |
@@ -259,7 +269,7 @@ It's now a permanent, searchable note — next time you ask "why did we choose J
 **Real example:** You need a color palette and font pairing for a finance dashboard, not just "something that looks nice."
 
 ```
-uipro search "finance dashboard" --domain color-palettes
+skill:ui-ux-pro-max:design "finance dashboard" --domain color-palettes
 ```
 
 Returns specific, tested palette options suited to that exact product type, instead of a generic guess.
@@ -267,6 +277,12 @@ Returns specific, tested palette options suited to that exact product type, inst
 ---
 
 ## 10. open-design — Design Artifact Generation
+
+Not installed by default (`superstack install --with-design` to include it) and
+never verified on a real machine this round — treat the `od` shorthand below
+with caution: it collides with the real Unix `od` (octal dump) utility on
+every machine, so a router or script that assumes bare `od` means open-design
+will silently invoke the wrong binary. Use the full command, not the alias.
 
 | Command | Description |
 |---|---|

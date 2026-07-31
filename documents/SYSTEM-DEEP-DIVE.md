@@ -42,10 +42,10 @@ Without SuperStack, using these 10 repos looks like this:
 ```
 You: "add auth to login page"
 You manually think: "should I use GSD or ECC to plan this?"
-You manually type: /gsd-plan-feature
+You manually type: skill:gsd-plan-phase
 You manually think: "I should check the design system"
-You manually type: uipro search "auth form"
-You manually type: /execute-plan
+You manually type: skill:ui-ux-pro-max:design "auth form"
+You manually type: skill:gsd-execute-phase
 You manually remember: "did I run code review?"
 You manually type: /ecc:code-review
 You manually think: "should I save this to my notes?"
@@ -56,8 +56,8 @@ With SuperStack, it looks like this:
 
 ```
 You: "add auth to login page"
-Claude: "→ Plan: /gsd-plan-feature, Design: uipro search 'auth form',
-         Build: /execute-plan, Review: /ecc:code-review. Proceed?"
+Claude: "→ Plan: skill:gsd-plan-phase, Design: skill:ui-ux-pro-max:design 'auth form',
+         Build: skill:gsd-execute-phase, Review: /ecc:code-review. Proceed?"
 You: "yes"
 [everything runs, memory auto-updates]
 ```
@@ -132,10 +132,10 @@ Everything SuperStack installs globally lives under `~/.claude/`:
 │   ├── andrej-karpathy-skills/
 │   └── ui-ux-pro-max/
 │
-├── commands/                                ← gsd-core's slash commands land here
-│   ├── gsd-new-project.md
-│   ├── gsd-plan-feature.md
-│   └── ...
+├── skills/                                  ← gsd-core lands its skills here
+│   ├── gsd-new-project/
+│   ├── gsd-plan-phase/
+│   └── ... (invoked via the Skill tool, not as slash commands)
 │
 └── superstack/                              ← SuperStack's own home
     ├── bin/
@@ -150,7 +150,7 @@ Everything SuperStack installs globally lives under `~/.claude/`:
         └── vault/
             ├── hot.md
             ├── index.md
-            ├── log.md
+            ├── turn-log.md
             └── wiki/
 ```
 
@@ -170,7 +170,7 @@ my-project/
 ├── .vault/                ← THIS project's Obsidian vault (memory)
 │   ├── hot.md              ← rolling recent-context cache (last ~50 lines)
 │   ├── index.md            ← table of contents: what topics exist
-│   ├── log.md               ← history of ingestions/sessions
+│   ├── turn-log.md          ← per-turn execution log (auto-appended by Stop hook)
 │   └── wiki/                ← individual knowledge pages (Markdown)
 ├── graphify-out/              ← THIS project's code knowledge graph
 │   ├── graph.json
@@ -195,8 +195,8 @@ the start of every session and follows on every single prompt. Claude Code
 supports this natively: any `CLAUDE.md` in the global config or project root is
 automatically loaded into context.
 
-The router contains 7 numbered steps that Claude executes, in order, for every
-prompt:
+The router contains 8 numbered steps (0 through 7) that Claude executes, in
+order, for every prompt:
 
 ```
 STEP 0 → Always-on discipline (Karpathy guidelines)
@@ -206,6 +206,7 @@ STEP 3 → Intent routing (match prompt → tool chain)
 STEP 4 → Preview + confirmation
 STEP 5 → Execute the chain
 STEP 6 → Silent memory write-back
+STEP 7 → Report (Stop-hook banner + routing-miss warning)
 ```
 
 Think of it as a **flowchart written in English** that Claude follows instead
@@ -282,8 +283,8 @@ Claude Code with SuperStack active.
 │ Claude matches your prompt against the intent table             │
 │ (Section 12) and picks a tool chain, e.g.:                      │
 │   "add auth to login" → feature+UI →                            │
-│   graphify query → /gsd-plan-feature → uipro search →           │
-│   /execute-plan → /ecc:code-review                               │
+│   graphify query → skill:gsd-plan-phase → skill:ui-ux-pro-max:design →           │
+│   skill:gsd-execute-phase → /ecc:code-review                               │
 │ If it's a planning task, Claude picks GSD vs ECC vs Superpowers  │
 │ intelligently based on size/risk/clarity of the task.            │
 └───────────────────────────────────────────────────────────────┘
@@ -297,8 +298,8 @@ Claude Code with SuperStack active.
 │   HEAVY       → >10 files or whole-codebase — preview ALWAYS     │
 │   DESTRUCTIVE → deletes/overwrites/resets — preview ALWAYS       │
 │ Preview looks like:                                              │
-│   "→ /gsd-plan-feature (structure work), uipro search            │
-│      (design pattern), /execute-plan (build),                    │
+│   "→ skill:gsd-plan-phase (structure work), skill:ui-ux-pro-max:design            │
+│      (design pattern), skill:gsd-execute-phase (build),                    │
 │      /ecc:code-review (verify). ~4 files. Proceed?"              │
 └───────────────────────────────────────────────────────────────┘
                     │  (you confirm, or say /skip for NORMAL tasks)
@@ -313,7 +314,7 @@ Claude Code with SuperStack active.
                     ▼
 ┌───────────────────────────────────────────────────────────────┐
 │ STEP 6 — SILENT MEMORY WRITE-BACK                                │
-│   • Append 2-5 line summary to .vault/hot.md                    │
+│   • Append a substantive 2-5 line summary to .vault/hot.md        │
 │   • Update .vault/index.md if new topics were created             │
 │   • Note affected files for the next graphify re-index           │
 │ Never announced. Happens automatically via the Stop hook.        │
@@ -321,12 +322,19 @@ Claude Code with SuperStack active.
                     │
                     ▼
 ┌───────────────────────────────────────────────────────────────┐
-│ Stop HOOK fires automatically:                                   │
+│ STEP 7 — REPORT: Stop HOOK fires automatically:                  │
+│   • Appends ONE factual trace line to hot.md (auto-save,         │
+│     doesn't depend on the model remembering to write)            │
 │   • Trims hot.md to the last ~50 lines (keeps it small)           │
-│   • Turn-report script emits a one-line summary as a             │
-│     `systemMessage` — Stop hooks discard stderr and reject the   │
-│     additionalContext envelope, so systemMessage on stdout is    │
-│     the only channel that reaches you                            │
+│   • Turn-report script emits a one-line `systemMessage` banner   │
+│     — including a loud ⚠ routing-miss warning if the matched     │
+│     intent's expected repo never ran this turn (catches          │
+│     under-routing even on read-only turns the guard can't block) │
+│   • State tracking is project-scoped, not session-scoped, so a   │
+│     dispatched subagent's tool calls still get credited to the   │
+│     parent turn's tally                                          │
+│   • Hook commands run via `bash -lc` so `node` resolves from the │
+│     user's shell profile, not a bare (possibly PATH-less) call   │
 └───────────────────────────────────────────────────────────────┘
 ```
 
@@ -344,7 +352,7 @@ A folder of plain Markdown files that acts like a wiki about your project.
 .vault/
 ├── hot.md      → "what happened recently" — rolling ~50-line cache
 ├── index.md    → table of contents — what topics/pages exist
-├── log.md      → history of every ingestion/session
+├── turn-log.md → per-turn execution log — auto-appended by the Stop hook
 └── wiki/       → individual pages, one topic per file, cross-linked
 ```
 
@@ -401,9 +409,9 @@ no matter what.
 **Preview format** — always one line per command, plus a file-count estimate:
 
 ```
-→ /gsd-plan-feature (structure the work)
-→ uipro search "auth form" (find a design pattern)
-→ /execute-plan (implement)
+→ skill:gsd-plan-phase (structure the work)
+→ skill:ui-ux-pro-max:design "auth form" (find a design pattern)
+→ skill:gsd-execute-phase (implement)
 → /ecc:code-review (verify quality)
 ~4 files affected. Proceed?
 ```
@@ -506,8 +514,9 @@ SessionStart  → runs when you open a project in Claude Code
                 (this is the "silent memory injection" from Step 1)
 
 Stop          → runs when a session/turn ends
-                trims .vault/hot.md down to the last ~50 lines
-                (keeps the memory file small and fast to read)
+                appends one factual trace line to .vault/hot.md
+                (so memory persists automatically), then trims it
+                down to the last ~50 lines (keeps it small)
 ```
 
 **Why so few hooks:** hooks are best for simple, always-true actions (load
@@ -523,23 +532,29 @@ This is the actual table Claude follows at Step 3, verbatim from the router:
 
 | Your Intent | Tool Chain |
 |---|---|
-| New feature | graphify query → planner (see rule below) → [uipro search if UI] → `/execute-plan` → `/ecc:code-review` |
-| Bug fix | graphify query → `/gsd-plan-bugfix` → fix (ponytail ultra) → `/ecc:quality-gate` |
+| New feature | graphify query → planner (see rule below) → [skill:ui-ux-pro-max:design if UI] → `skill:gsd-execute-phase` → `/ecc:code-review` |
+| Bug fix | graphify query → `skill:gsd-debug` → fix (ponytail ultra) → `/ecc:quality-gate` |
 | Debug/build error | graphify query → `/ecc:build-fix` → `/ecc:checkpoint` |
-| Refactor/cleanup | `/ponytail-audit` → `/ecc:refactor-clean` → `/ecc:test-coverage` |
+| Refactor/cleanup | `skill:ponytail:ponytail-audit` → `/ecc:refactor-clean` → `/ecc:test-coverage` |
 | Write tests | graphify query → ECC tdd-workflow skill → `/ecc:test-coverage` |
 | Security check | `/ecc:security-scan` → security-review skill |
-| UI/design work | `uipro search "<pattern>"` → build → [`od plugin apply` if open-design installed] |
-| Research a topic | `/autoresearch <topic>` → results filed into `.vault/` |
+| UI/design work | `skill:ui-ux-pro-max:design "<pattern>"` → build → [`skill:ecc:accessibility` if a11y-specific] → [open-design skill if repos_enabled.open-design is true] |
+| Research a topic | `skill:claude-obsidian:autoresearch <topic>` → results filed into `.vault/` |
 | "What do we know about X" | vault + graphify only — silent, cited answer |
 | "Remember this" / save | vault ingest — silent |
-| Ship/release | `/gsd-ready-to-ship` → `/ecc:quality-gate` → `graphify diff` → `/save` |
-| Understand the codebase | `graphify .` or `graphify query` → summarize |
+| Ship/release | `skill:gsd-ship` → `/ecc:quality-gate` → `graphify diff` → `/save` |
+| Understand the codebase | `graphify query` → summarize; if genuinely unfamiliar → `skill:gsd-onboard` → `skill:gsd-map-codebase` first (graphify has no separate `.` subcommand; `graphify run .` builds the graph) |
+| Documentation (write/update docs) | `graphify query` → `/ecc:update-docs` |
+| Database/schema change | `skill:ecc:database-migrations` → `agent:database-reviewer` |
+| Review an existing PR | `/ecc:review-pr` (or `/ecc:pr` for the PR workflow itself) |
+| Deep/intermittent bug (not a simple build failure) | `skill:superpowers:systematic-debugging` → `skill:gsd-debug` |
+| Extract/save a reusable pattern | `skill:ecc:learn` → vault ingest |
+| Project status/progress | `skill:gsd-progress` (or `skill:gsd-stats` for metrics) |
 
 **Planner selection rule** (used whenever intent = "plan"):
-- Multi-phase, large, or risky → **GSD Core** (`/gsd-plan-feature`)
+- Multi-phase, large, or risky → **GSD Core** (`skill:gsd-plan-phase`)
 - Small and well-understood → **ECC** (`/ecc:plan`)
-- Requirements still unclear → **Superpowers** (`/brainstorm`)
+- Requirements still unclear → **Superpowers** (skill:superpowers:brainstorming)
 Claude states which one it picked and why, in one line.
 
 ---
@@ -628,7 +643,7 @@ affect the global tools, never your project memory.
 | `superstack.json` | `templates/` → project root | Per-project config: ponytail level, enabled repos |
 | `hot.md` | `templates/vault/` → `.vault/` | Rolling recent-context cache |
 | `index.md` | `templates/vault/` → `.vault/` | Table of contents of vault knowledge |
-| `log.md` | `templates/vault/` → `.vault/` | Ingestion/session history |
+| `turn-log.md` | `templates/vault/` → `.vault/` | Per-turn execution log (tools used, skipped repos, cost/tokens) — appended by the Stop hook |
 | `wiki/` | `templates/vault/` → `.vault/` | Individual knowledge pages |
 
 ---
@@ -655,20 +670,34 @@ Stated plainly, with no hedging:
    instructions for Claude to follow, not compiled logic. The same prompt
    asked twice will *usually* route the same way, but Claude's judgment can
    occasionally classify a task differently (e.g., miss that something
-   qualifies as "heavy"). A script always behaves identically; Claude's
-   judgment does not.
+   qualifies as "heavy"), or run a nearby-sounding skill instead of the exact
+   one the table names. A script always behaves identically; Claude's
+   judgment does not. The Stop-hook's `⚠ routing-miss` warning (Section 6/7)
+   mitigates this by flagging it loudly after the fact — it cannot prevent a
+   wrong choice, only make it visible on every turn, including read-only ones
+   the PreToolUse guard can't reach.
 2. **Only common commands are auto-triggered.** Roughly 30% of the commands
    across all 10 repos are wired into the intent table. The rest (e.g.
    `/ecc:go-review`, `/ecc:instinct-export`, most `od plugin` variants) work
    fine but only if you call them by name yourself.
-3. **Hooks can't read intent.** `SessionStart`/`Stop` only run fixed shell
-   commands (cat a file, trim a file) — they cannot decide "was this prompt
-   vague." Judgment always lives in the router, never in a hook.
+3. **Hooks mostly can't read intent — with one narrow exception.**
+   `SessionStart`/Stop-trim only run fixed shell commands (cat a file, trim a
+   file) — no judgment. The Stop-hook's routing-miss check is the one
+   exception: a small regex table maps prompt keywords to an expected repo,
+   which is pattern-matching, not understanding — it can miss subtleties a
+   human or the model itself would catch. Real judgment still lives in the
+   router, never in a hook.
 4. **Plugin install commands can vary by Claude Code version.** If a
    `/plugin install` call fails during `superstack install`, the script
    prints the exact manual command to run instead of failing silently.
 5. **open-design is heavy.** It needs Node 24 and pnpm and is excluded from
    the default install specifically because of this weight.
+6. **Turn-tracking state is project-scoped, not session-scoped.** This fixes
+   a real gap (a dispatched subagent's tool calls used to vanish from the
+   parent turn's tally, since subagent-fired hooks carry a different
+   `session_id`) but trades it for a rarer one: two separate Claude Code
+   sessions open in the same project directory at once now share one
+   turn-state file and could interleave their tallies.
 
 ---
 
